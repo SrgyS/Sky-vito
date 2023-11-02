@@ -20,6 +20,8 @@
         "@typescript-eslint"
     ],
     "rules": {
+            "@typescript-eslint/no-explicit-any": "error",
+            "react/react-in-jsx-scope": "off"  
     },
     "settings": {
         "import/resolver": {

@@ -1,0 +1,22 @@
+.adv {
+&__section {
+    margin-top: 215px;  
+    padding-bottom: 30px; 
+}
+&__title {
+    color: #000;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 2.2;
+}
+&__container {
+    display: grid;
+grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+grid-column-gap: 26px;
+grid-row-gap: 40px;
+justify-items: center;
+}
+
+}
+

@@ -1,0 +1,31 @@
+import BlueButton from 'components/buttons/BlueButton'
+import S from './Header.module.scss'
+import { useState } from 'react'
+
+type Props = { onSearch: (value: string) => void; value: string }
+
+const SearchInput = ({ onSearch, value }: Props) => {
+  const [searchValue, setSearchValue] = useState(value)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value)
+  }
+
+  const handleSearchClick = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    onSearch(searchValue)
+  }
+  return (
+    <form className={S.header__search} onSubmit={handleSearchClick}>
+      <input
+        type="search"
+        value={searchValue}
+        placeholder="Поиск по объявлениям"
+        onChange={handleInputChange}
+      ></input>
+      <BlueButton text="Найти" />
+    </form>
+  )
+}
+
+export default SearchInput
