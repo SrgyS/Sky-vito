@@ -1,6 +1,6 @@
-import BlueButton from 'components/buttons/BlueButton'
 import S from './Header.module.scss'
 import { useState } from 'react'
+import Button from 'common/buttons/Button'
 
 type Props = { onSearch: (value: string) => void; value: string }
 
@@ -23,7 +23,7 @@ const SearchInput = ({ onSearch, value }: Props) => {
         placeholder="Поиск по объявлениям"
         onChange={handleInputChange}
       ></input>
-      <BlueButton text="Найти" />
+      <Button className="color_btn" text="Найти" />
     </form>
   )
 }

@@ -1,24 +1,21 @@
-export const formatDate = (dateTimeString: string) => {
-  const currentDate = new Date()
-  const inputDate = new Date(dateTimeString)
+import { format, formatDistanceToNow, parseISO } from 'date-fns'
+import ruLocale from 'date-fns/locale/ru'
 
-  const diffInMs = Math.abs(currentDate.getTime() - inputDate.getTime())
-  const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24))
+export const formatUserDate = (date: string) => {
+  const parseDate = parseISO(date)
 
-  if (diffInDays === 0) {
-    return `сегодня в ${inputDate.toLocaleTimeString()}`
-  }
-
-  if (diffInDays < 7) {
-    return `${diffInDays} дней назад`
-  }
-  if (diffInDays < 31) {
-    return `${Math.floor(diffInDays / 7)} недель назад`
-  }
-
-  return `${inputDate.toLocaleDateString()}`
+  return format(parseDate, 'MMMM yyyy', { locale: ruLocale })
 }
 
+export const formatAdvDate = (dateTimeString: string) => {
+  const inputDate = parseISO(dateTimeString)
+  const timeDistance = formatDistanceToNow(inputDate, {
+    addSuffix: true,
+    locale: ruLocale,
+  })
+
+  return timeDistance
+}
 export const formatPrice = (price: number) => {
   return price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1 ')
 }
@@ -27,4 +24,17 @@ export const validateSearchText = (text: string) => {
   text = text.replace(/<|>|\.+/g, '')
   text = text.trim().replace(/\s+/g, ' ')
   return text
+}
+export const declineWord = (count: number) => {
+  if (count % 10 === 1 && count % 100 !== 11) {
+    return 'отзыв'
+  }
+  if (
+    count % 10 >= 2 &&
+    count % 10 <= 4 &&
+    (count % 100 < 10 || count % 100 >= 20)
+  ) {
+    return 'отзыва'
+  }
+  return 'отзывов'
 }

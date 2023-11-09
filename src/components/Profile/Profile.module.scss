@@ -1,0 +1,70 @@
+.profile {
+    &__img {
+        height: 170px;
+        max-width: 170px;
+        background-color: #F0F0F0;
+        border-radius: 50%;  
+        overflow: hidden;
+        img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }  
+}
+&__info {
+    display: flex;
+    justify-content: flex-start;
+    gap: 50px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+&__text {
+    color: #5F5F5F;
+font-size: 16px;
+font-style: normal;
+font-weight: 400;
+line-height: 2; 
+
+}
+&__name{
+    color: #000;
+font-size: 20px;
+font-style: normal;
+font-weight: 600;
+line-height: 2; 
+}
+&__details button {
+    margin-top: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+&__form {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 630px;
+
+    }
+ &__form>div:last-of-type {  
+        width: 614px;    
+}
+
+}
+.img_box {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form__group {
+    min-width: 300px;
+    margin: 0 7px 10px;
+    label {
+        color: #C4C4C4;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 1.5;
+    }
+}

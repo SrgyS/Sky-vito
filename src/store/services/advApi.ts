@@ -7,12 +7,36 @@ export const advApi = createApi({
   }),
   tagTypes: ['Adv'],
   endpoints: (build) => ({
-    getAdv: build.query({
+    getAllAdvs: build.query({
       query: () => ({
         url: '/ads',
+      }),
+    }),
+
+    getAdvById: build.query({
+      query: (id: string) => ({
+        url: `/ads/${id}`,
+      }),
+    }),
+    getSellerAdvs: build.query({
+      query: (sellerId = null) => ({
+        url: '/ads',
+        params: {
+          user_id: sellerId,
+        },
+      }),
+    }),
+    getAdvComments: build.query({
+      query: (id: string) => ({
+        url: `/ads/${id}/comments`,
       }),
     }),
   }),
 })
 
-export const { useGetAdvQuery } = advApi
+export const {
+  useGetAllAdvsQuery,
+  useGetAdvByIdQuery,
+  useGetSellerAdvsQuery,
+  useGetAdvCommentsQuery,
+} = advApi

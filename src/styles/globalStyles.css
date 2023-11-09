@@ -40,19 +40,17 @@ html {
 
 button {
   display: inline-block;
-  padding: 8px 24px;
   border-radius: 6px;
   text-align: center;
   text-decoration: none;
   color: #fff;
   box-sizing: border-box;
-
   font-family: Roboto;
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
-
+  white-space: wrap;
   border: none;
   background-color: transparent;
 
@@ -71,4 +69,10 @@ input {
 .center {
   padding-left: calc(50% - 579px);
   padding-right: calc(50% - 579px);
+}
+a {
+  text-decoration: none;
+}
+a:visited {
+  color: none;
 }
