@@ -1,11 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { advApi } from './services/advApi'
-import { authApi } from './services/authApi'
+
 import advsSlice from './slices/advsSlice'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import authSlice from './slices/authSlice'
 import userSlice from './slices/userSlice'
-import { userApi } from './services/userApi'
 
 export const store = configureStore({
   reducer: {
@@ -13,14 +12,14 @@ export const store = configureStore({
     advs: advsSlice,
     user: userSlice,
     [advApi.reducerPath]: advApi.reducer,
-    [authApi.reducerPath]: authApi.reducer,
-    [userApi.reducerPath]: userApi.reducer,
+    // [authApi.reducerPath]: authApi.reducer,
+    // [userApi.reducerPath]: userApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       advApi.middleware,
-      authApi.middleware,
-      userApi.middleware,
+      // authApi.middleware,
+      // userApi.middleware,
     ),
 })
 

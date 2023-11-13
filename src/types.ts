@@ -19,13 +19,20 @@ export interface IUser {
 
 export interface IAdv {
   title: string
-  description: string
-  price: number
-  id: number
-  images: IImage[]
-  user_id: number
-  created_on: string
-  user: IUser
+  description?: string
+  price?: number | string
+  id?: number
+  images?: IImage[]
+  user_id?: number
+  created_on?: string
+  user?: IUser
+}
+export interface IAddNewAdv {
+  title: string
+  description?: string
+  price?: number | string
+  imgFiles?: (File | null)[] | null
+  images?: IImage[]
 }
 export interface IBaseFormData {
   name?: string
@@ -47,33 +54,3 @@ export interface IRegistrationError {
       }
     | unknown
 }
-
-export type BaseQueryFn<
-  Args = any,
-  Result = unknown,
-  Error = unknown,
-  DefinitionExtraOptions = {},
-  Meta = {},
-> = (
-  args: Args,
-  api: BaseQueryApi,
-  extraOptions: DefinitionExtraOptions,
-) => MaybePromise<QueryReturnValue<Result, Error, Meta>>
-
-export interface BaseQueryApi {
-  signal: AbortSignal
-  dispatch: ThunkDispatch<any, any, any>
-  getState: () => unknown
-}
-
-export type QueryReturnValue<T = unknown, E = unknown, M = unknown> =
-  | {
-      error: E
-      data?: undefined
-      meta?: M
-    }
-  | {
-      error?: undefined
-      data: T
-      meta?: M
-    }

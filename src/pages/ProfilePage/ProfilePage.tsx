@@ -8,11 +8,14 @@ import Profile from 'components/Profile/Profile'
 import { useGetSellerAdvsQuery } from 'store/services/advApi'
 import { IAdv } from 'types'
 import { useAppSelector } from 'hooks/reduxHooks'
+import { useEffect } from 'react'
 
 const ProfilePage = () => {
-  const userData = useAppSelector((state: RootState) => state.user)
+  const userData = useAppSelector((state) => state.user)
 
-  const { data, isLoading, error } = useGetSellerAdvsQuery(userData.id)
+  const { data, isLoading, error, isSuccess } = useGetSellerAdvsQuery(
+    userData.id,
+  )
   if (isLoading) {
     return <p>Загрузка...</p>
   }

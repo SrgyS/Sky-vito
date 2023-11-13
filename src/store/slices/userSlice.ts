@@ -5,11 +5,11 @@ export interface IUserState {
   password: string | null
   surname?: string | null
   phone?: string | null
-  email?: string | null
+  email: string | null
   id?: string | number | null
   city?: string | null
   sells_from?: string | null
-  avatar: string | null
+  avatar?: string | null
 }
 
 const initialState: IUserState = {
@@ -28,16 +28,16 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<{ userData: IUserState }>) => {
+    setUser: (state, action: PayloadAction<IUserState>) => {
       const userData = action.payload
-      localStorage.setItem('user', JSON.stringify(userData))
       Object.assign(state, userData)
+      // const { id, email } = userData
+      // localStorage.setItem('user', JSON.stringify({ id, email }))
     },
 
     logout: (state) => {
       Object.assign(state, initialState)
       localStorage.clear()
-      sessionStorage.clear()
     },
   },
 })

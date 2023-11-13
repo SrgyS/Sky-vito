@@ -11,11 +11,22 @@
             object-fit: contain;
         }  
 }
+&__small_img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #F0F0F0;
+    overflow: hidden;
+    img {
+        width: 100%;
+        object-fit: contain;
+    }
+}
 &__info {
     display: flex;
     justify-content: flex-start;
     gap: 50px;
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap;
 }
 &__text {
@@ -67,4 +78,15 @@ font-style: normal;
 font-weight: 500;
 line-height: 1.5;
     }
+}
+.hidden_input {
+    display: none;
+}
+.change_img {
+    color: #009EE4;
+font-size: 16px;
+font-style: normal;
+font-weight: 400;
+line-height: 1.5;
+cursor: pointer;
 }

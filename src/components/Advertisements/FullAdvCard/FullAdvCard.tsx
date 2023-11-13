@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import AdvWrapper from './AdvWrapper'
 import { IAdv, IImage } from 'types'
 import {
@@ -11,30 +11,50 @@ import BigImg from './BigImg'
 import SmallImg from './SmallImg'
 import S from '../FullAdvCard/FullAdvCard.module.scss'
 import S2 from '../MiniAdvCard/MiniAdvCard.module.scss'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { setCurrentAdv } from 'store/slices/advsSlice'
-import { useGetAdvCommentsQuery } from 'store/services/advApi'
+import {
+  useDeleteAdvMutation,
+  useGetAdvCommentsQuery,
+  useRefreshTokenMutation,
+} from 'store/services/advApi'
 import noImgUrl from 'assets/img/no_image.png'
 import Button from 'common/buttons/Button'
-import { useAppDispatch } from 'hooks/reduxHooks'
+import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
+import noAvatarImgUrl from 'assets/img/no-ava.png'
+import SmallProfileImg from 'components/Profile/SmallProfileImg'
+import { useAuth } from 'hooks/useAuth'
+import AddNewAdv from 'components/modals/AddNewAdv'
 
 type Props = {
   cardInfo: IAdv
 }
 
 const FullAdvCard = ({ cardInfo }: Props) => {
+  const { id } = useAuth()
   const { data, isLoading, error } = useGetAdvCommentsQuery(String(cardInfo.id))
-
-  const date = formatAdvDate(cardInfo.created_on)
-  const sellsFrom = cardInfo.user.sells_from
+  const location = useLocation()
+  const date = formatAdvDate(cardInfo.created_on ?? '')
+  const sellsFrom = cardInfo.user?.sells_from
     ? formatUserDate(cardInfo.user.sells_from)
     : ''
   const baseUrl = 'http://localhost:8090'
-  const formatedPrice = formatPrice(cardInfo.price)
-  const dispatch = useAppDispatch()
+  const formatedPrice = formatPrice(Number(cardInfo.price))
+
   const [selectedImg, setSelectedImg] = useState(
     cardInfo.images ? cardInfo.images[0]?.url : null,
   )
+  const { access_token, refresh_token } = useAppSelector((state) => state.auth)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [
+    refreshToken,
+    { isError: isRefreshTokenError, isSuccess: isRefreshTokenSuccess },
+  ] = useRefreshTokenMutation()
+  const [deleteAdv, { error: deleteAdvError, isSuccess: isDeleteAdvSucccess }] =
+    useDeleteAdvMutation()
+
+  const navigate = useNavigate()
+  const isUserAdvPage = location.pathname === `/user/ads/${cardInfo.id}`
 
   const [isPhoneNumberVisible, setIsPhoneNumberVisible] = useState(false)
 
@@ -42,15 +62,32 @@ const FullAdvCard = ({ cardInfo }: Props) => {
     setSelectedImg(img.url)
   }
 
-  const handleProfileClick = () => {
-    dispatch(setCurrentAdv(cardInfo))
-  }
   const handleBtnClick = () => {
     setIsPhoneNumberVisible(!isPhoneNumberVisible)
   }
 
+  const handleDeleteAdv = async (cardId: number) => {
+    if (!access_token || !refresh_token) {
+      console.error('Токены не заданы')
+      return
+    }
+    await refreshToken({ access_token, refresh_token })
+    await deleteAdv(cardId)
+  }
+
+  const openModal = () => {
+    setIsModalOpen(true)
+  }
+  const closeModal = () => {
+    setIsModalOpen(false)
+  }
   const reviewCount = data?.length
 
+  useEffect(() => {
+    if (isDeleteAdvSucccess) {
+      navigate(`/user/${id}`)
+    }
+  }, [isDeleteAdvSucccess])
   return (
     <AdvWrapper>
       <div className={S.img_wrapper}>
@@ -74,7 +111,7 @@ const FullAdvCard = ({ cardInfo }: Props) => {
       <div>
         <h1>{cardInfo.title}</h1>
         <p className={S2.card__date}>{date}</p>
-        <p className={S2.card__date}>{cardInfo.user.city}</p>
+        <p className={S2.card__date}>{cardInfo.user?.city}</p>
         <p className={S.user_review}>
           {reviewCount === 0
             ? 'Нет отзывов'
@@ -82,7 +119,26 @@ const FullAdvCard = ({ cardInfo }: Props) => {
           ${declineWord(reviewCount)}`}
         </p>
         <p className={S2.card__price}>{formatedPrice} ₽</p>
-        {isPhoneNumberVisible && cardInfo.user.phone ? (
+        {isUserAdvPage && cardInfo.id ? (
+          <div className={S.btn_box}>
+            <Button
+              text="Редактировать"
+              className="color_btn"
+              onClick={openModal}
+            />
+            <Button
+              text="Снять с публикации"
+              onClick={() => {
+                if (cardInfo.id !== undefined) {
+                  handleDeleteAdv(cardInfo.id)
+                } else {
+                  console.log('delete error')
+                }
+              }}
+              className={cardInfo.id ? 'color_btn' : 'color_btn disabled'}
+            />
+          </div>
+        ) : isPhoneNumberVisible && cardInfo.user?.phone ? (
           <Button
             text="телефон"
             phone={cardInfo.user.phone}
@@ -91,10 +147,10 @@ const FullAdvCard = ({ cardInfo }: Props) => {
         ) : (
           <Button
             text={
-              cardInfo.user.phone ? 'Показать телефон' : 'Телефон не указан'
+              cardInfo.user?.phone ? 'Показать телефон' : 'Телефон не указан'
             }
             phone={
-              cardInfo.user.phone
+              cardInfo.user?.phone
                 ? `${cardInfo.user.phone.slice(0, 2)} XXX XXX-XX-XX`
                 : ''
             }
@@ -102,13 +158,18 @@ const FullAdvCard = ({ cardInfo }: Props) => {
             onClick={() => handleBtnClick()}
           />
         )}
-        <Link to={`/seller/${cardInfo.user.id}`} onClick={handleProfileClick}>
+        <Link to={`/seller/${cardInfo.user?.id}`}>
           <div className={S.user_info_wrapper}>
-            <div className={S.user_img}>
-              <img src="" alt="" />
-            </div>
+            {cardInfo.user?.avatar ? (
+              <SmallProfileImg
+                src={`${baseUrl}/${cardInfo.user.avatar}`}
+                alt="avatar image"
+              />
+            ) : (
+              <SmallProfileImg src={noAvatarImgUrl} alt="avatar image" />
+            )}
             <div>
-              <p className={S.user_name}>{cardInfo.user.name}</p>
+              <p className={S.user_name}>{cardInfo.user?.name}</p>
               <p className={S.user_date}>Продает товары с {sellsFrom}</p>
             </div>
           </div>
@@ -118,6 +179,11 @@ const FullAdvCard = ({ cardInfo }: Props) => {
         <h2>Описание товара</h2>
         <p>{cardInfo.description}</p>
       </div>
+      <AddNewAdv
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        editingAdvData={cardInfo}
+      />
     </AdvWrapper>
   )
 }

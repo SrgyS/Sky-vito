@@ -1,15 +1,10 @@
 import { useAppDispatch } from 'hooks/reduxHooks'
 import { useEffect } from 'react'
 import AppRoutes from 'routing/AppRoutes'
-import { useGetUserQuery } from 'store/services/advApi'
 import { setTokens } from 'store/slices/authSlice'
-import { setUser } from 'store/slices/userSlice'
 
-function App() {
+export function App() {
   const dispatch = useAppDispatch()
-
-  const storedUser = localStorage.getItem('user')
-  const id = storedUser ? JSON.parse(storedUser).id : null
 
   useEffect(() => {
     const localStorageTokens = localStorage.getItem('tokens')
@@ -20,19 +15,10 @@ function App() {
     }
   }, [dispatch])
 
-  const {
-    data: userData,
-    error: userError,
-    isLoading: isUserLoading,
-  } = useGetUserQuery(id)
-
-  useEffect(() => {
-    if (userData) {
-      dispatch(setUser(userData))
-    }
-  }, [userData, dispatch])
-
+  // const {
+  //   data: userData,
+  //   error: userError,
+  //   isLoading: isUserLoading,
+  // } = useGetUserQuery(id)
   return <AppRoutes />
 }
-
-export default App

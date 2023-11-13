@@ -9,11 +9,12 @@ import FormError from 'components/Error/FormError'
 import {
   useLoginUserMutation,
   useRegisterUserMutation,
-} from 'store/services/authApi'
+  useGetUserQuery,
+} from 'store/services/advApi'
 
 import { setTokens } from 'store/slices/authSlice'
 import { setUser } from 'store/slices/userSlice'
-import { useGetUserQuery } from 'store/services/userApi'
+
 import { useAppDispatch } from 'hooks/reduxHooks'
 
 type FormErrors = {
@@ -75,6 +76,7 @@ const Auth = () => {
     isLoading: isUserLoading,
   } = useGetUserQuery(null, {
     skip: !isAuthenticated,
+    refetchOnReconnect: true,
   })
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -119,6 +121,9 @@ const Auth = () => {
   }
 
   useEffect(() => {
+    if (isLoginError) {
+      console.log('login error', loginError)
+    }
     if (isLoginSuccess) {
       dispatch(setTokens(loginData))
       setIsAuthenticated(true)

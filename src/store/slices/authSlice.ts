@@ -18,11 +18,11 @@ export const authSlice = createSlice({
       state,
       action: PayloadAction<{ access_token: string; refresh_token: string }>,
     ) => {
-      sessionStorage.setItem(
+      localStorage.setItem(
         'tokens',
         JSON.stringify({
-          access: action.payload.access_token,
-          refresh: action.payload.refresh_token,
+          access_token: action.payload.access_token,
+          refresh_token: action.payload.refresh_token,
         }),
       )
       state.access_token = action.payload.access_token
