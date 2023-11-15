@@ -8,11 +8,11 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
 import { setTokens } from 'store/slices/authSlice'
 import { useEffect } from 'react'
-import { selectorTokens } from 'store/selectors/selectors'
+import { selectTokens } from 'store/selectors/selectors'
 import { useGetUserQuery } from 'store/services/advApi'
 
 function AppRoutes() {
-  const tokens = useAppSelector(selectorTokens)
+  const tokens = useAppSelector(selectTokens)
 
   return (
     <Routes>

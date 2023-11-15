@@ -1,25 +1,28 @@
 import { useEffect, useState } from 'react'
-import S from './AddNewAdv.module.scss'
+import S from './Modal.module.scss'
 import { IAddNewAdv, IAdv } from 'types'
-import { useAddAdvMutation } from 'store/services/advApi'
-import { useAppSelector } from 'hooks/reduxHooks'
+import { useAddAdvMutation, useAddTextAdvMutation } from 'store/services/advApi'
+import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
 import { useRefreshTokenMutation } from 'store/services/advApi'
+import Button from 'common/buttons/Button'
+import { selectIsOpen } from 'store/selectors/selectors'
+import { setCloseModal } from 'store/slices/advsSlice'
 
-type Props = {
-  isOpen: boolean
-  onClose: () => void
-  editingAdvData?: IAdv
-}
-
-const AddNewAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
+const AddNewAdv = () => {
   type FormChangeHandler =
     | React.ChangeEvent<HTMLInputElement>
     | React.ChangeEvent<HTMLTextAreaElement>
+  const dispatch = useAppDispatch()
+  const isOpen = useAppSelector(selectIsOpen)
+
+  const handleCloseModal = () => {
+    dispatch(setCloseModal())
+  }
 
   const initialFormData: IAddNewAdv = {
     title: '',
     description: '',
-    price: '',
+    price: 0,
     imgFiles: [],
     images: [],
   }
@@ -29,50 +32,52 @@ const AddNewAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
     () => null,
   )
   const { access_token, refresh_token } = useAppSelector((state) => state.auth)
-  const baseUrl = 'http://localhost:8090'
+
+  const [isFormChanged, setIsFormChanged] = useState(false)
+
   const [
     refreshToken,
     { isError: isRefreshTokenError, isSuccess: isRefreshTokenSuccess },
   ] = useRefreshTokenMutation()
 
-  const [formData, setFormData] = useState<IAddNewAdv>(() => {
-    if (editingAdvData) {
-      return editingAdvData
-    }
-    return initialFormData
-  })
+  const [formData, setFormData] = useState<IAddNewAdv>(initialFormData)
   const resetState = () => {
     setFormData(initialFormData)
     setFormError({})
     setImgFiles(initialImgFiles)
+    setIsFormChanged(false)
   }
 
   const [formError, setFormError] = useState({})
   const [imgFiles, setImgFiles] = useState(initialImgFiles)
 
   const [addAdv, { isError, isSuccess, data }] = useAddAdvMutation()
+  const [
+    addTextAdv,
+    {
+      isError: isAddTextAdvError,
+      isSuccess: isAddTextAdvSuccess,
+      data: addTextAdvData,
+    },
+  ] = useAddTextAdvMutation()
 
   const handleChange = (e: FormChangeHandler) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
+    setIsFormChanged(true)
     setFormError({})
-    console.log(formData)
   }
 
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number,
   ) => {
-    console.log('start')
     const file = e.target.files && e.target.files[0]
     if (file && file.type.startsWith('image/')) {
       setImgFiles((prevImgFiles) =>
         prevImgFiles.map((imgFile, i) => (i === index ? file : imgFile)),
       )
-      console.log('handleFileChange', imgFiles)
-
-      setFormData({ ...formData, imgFiles })
-      console.log('formData + img', formData)
+      setIsFormChanged(true)
     } else {
       console.error('Выбранный файл не является изображением')
     }
@@ -92,32 +97,34 @@ const AddNewAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
         return
       }
     }
-    console.log('addAdv', formData)
-    await addAdv(formData)
+    if (imgFiles.every((file) => file === null)) {
+      await addTextAdv(formData)
+      console.log('addTextAdv', formData)
+    } else {
+      console.log('addAdv', formData)
+      await addAdv(formData)
+    }
+    resetState()
+    // onClose()
   }
 
   useEffect(() => {
     if (isSuccess) {
       console.log('addAdvSucces')
     }
+    if (isAddTextAdvSuccess) {
+      console.log('addAdvTextSucces')
+    }
   }, [isSuccess])
 
   useEffect(() => {
+    console.log('add imgFiles', imgFiles)
     setFormData((prevFormData) => ({ ...prevFormData, imgFiles }))
   }, [imgFiles])
 
   useEffect(() => {
-    console.log('editingAdvData', editingAdvData)
-
-    if (editingAdvData) {
-      setFormData((prev) => ({ ...prev, ...editingAdvData }))
-      console.log('formData ed', formData)
-      console.log('img')
-    }
-  }, [editingAdvData, isOpen])
-
-  useEffect(() => {
     if (!isOpen) {
+      console.log('reset')
       resetState()
     }
   }, [isOpen])
@@ -125,10 +132,8 @@ const AddNewAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
   return (
     <div className={isOpen ? `${S.container} ${S.show}` : S.container}>
       <div className={S.modal_block}>
-        <h3 className={S.modal_title}>
-          {editingAdvData ? 'Редактировать объявление' : 'Новое объявление'}
-        </h3>
-        <div className={S.close_btn} onClick={() => onClose()}>
+        <h3 className={S.modal_title}>Новое объявление</h3>
+        <div className={S.close_btn} onClick={handleCloseModal}>
           <div className={S.close_btn_line}></div>
         </div>
         <form
@@ -167,46 +172,28 @@ const AddNewAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
               Фотографии товара<span>не более 5 фотографий</span>
             </p>
             <div className={S.form_img_bar}>
-              {editingAdvData && imgFiles.every((imgFile) => imgFile === null)
-                ? formData.images &&
-                  formData.images.map((img, index) => (
-                    <label
-                      key={index}
-                      htmlFor={`fileInput-${index}`}
-                      className={S.form_img}
-                    >
-                      <img
-                        src={img.url ? `${baseUrl}/${img.url}` : ''}
-                        alt=""
-                      />
-                      <div className={S.form_img_cover}></div>
-                      <input
-                        className={S.hidden}
-                        type="file"
-                        id={`fileInput-${index}`}
-                        onChange={(e) => handleFileChange(e, index)}
-                      />
-                    </label>
-                  ))
-                : imgFiles.map((imgFile, index) => (
-                    <label
-                      key={index}
-                      htmlFor={`fileInput-${index}`}
-                      className={S.form_img}
-                    >
-                      <img
-                        src={imgFile ? URL.createObjectURL(imgFile) : ''}
-                        alt=""
-                      />
-                      <div className={S.form_img_cover}></div>
-                      <input
-                        className={S.hidden}
-                        type="file"
-                        id={`fileInput-${index}`}
-                        onChange={(e) => handleFileChange(e, index)}
-                      />
-                    </label>
-                  ))}
+              {imgFiles.map((imgFile, index) => {
+                const uniqueId = `modal2-${index}`
+                return (
+                  <label
+                    key={uniqueId}
+                    htmlFor={`fileInput-${uniqueId}`}
+                    className={S.form_img}
+                  >
+                    {imgFile && (
+                      <img src={URL.createObjectURL(imgFile)} alt="" />
+                    )}
+
+                    <div className={S.form_img_cover}></div>
+                    <input
+                      className={S.hidden}
+                      type="file"
+                      id={`fileInput-${uniqueId}`}
+                      onChange={(e) => handleFileChange(e, index)}
+                    />
+                  </label>
+                )
+              })}
             </div>
           </div>
           <div className={`${S.form_block} ${S.block_price}`}>
@@ -217,12 +204,15 @@ const AddNewAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
               name="price"
               id="formName"
               onChange={handleChange}
+              value={formData.price}
             />
             <div className={S.input_price_cover}></div>
           </div>
-          <button className={S.form_btn_pub} id="btnPublish">
-            {editingAdvData ? 'Опубликовать' : 'Сохранить'}
-          </button>
+          <Button
+            className="color_btn"
+            text="Опубликовать"
+            disabled={!isFormChanged}
+          />
         </form>
       </div>
     </div>

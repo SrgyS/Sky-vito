@@ -1,6 +1,7 @@
 import TopSection from 'common/section/TopSection'
 
 import FullAdvCard from 'components/Advertisements/FullAdvCard/FullAdvCard'
+import Footer from 'components/Footer/Footer'
 import Header from 'components/Header/Header'
 
 import { useEffect } from 'react'
@@ -27,6 +28,7 @@ const AdvPage = () => {
         {error && <p>Ошибка загрузки</p>}
         {data && <FullAdvCard cardInfo={data} />}
       </TopSection>
+      <Footer />
     </>
   )
 }

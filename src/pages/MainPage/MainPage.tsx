@@ -9,6 +9,7 @@ import { validateSearchText } from 'utils/utils'
 import MiniAdvCard from 'components/Advertisements/MiniAdvCard/MiniAdvCard'
 
 import Header from 'components/Header/Header'
+import Footer from 'components/Footer/Footer'
 
 const MainPage = () => {
   const { data, isLoading, error } = useGetAllAdvsQuery({})
@@ -63,7 +64,7 @@ const MainPage = () => {
     <>
       <Header handleSearch={handleSearch} searchText={searchText} />
       <TopSection>
-        <Title>Объявления</Title>
+        <Title className={'main_title'}>Объявления</Title>
         <AdvContainer>
           {isLoading && <p>Загрузка...</p>}
           {!isLoading && error && <p>Что-то пошло не так...</p>}
@@ -78,6 +79,7 @@ const MainPage = () => {
             !error && <p>По запросу ничего не найдено</p>}
         </AdvContainer>
       </TopSection>
+      <Footer />
     </>
   )
 }

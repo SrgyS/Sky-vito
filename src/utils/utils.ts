@@ -38,3 +38,4 @@ export const declineWord = (count: number) => {
   }
   return 'отзывов'
 }
+export const baseUrl = 'http://localhost:8090'

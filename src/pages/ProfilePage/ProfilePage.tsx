@@ -9,6 +9,7 @@ import { useGetSellerAdvsQuery } from 'store/services/advApi'
 import { IAdv } from 'types'
 import { useAppSelector } from 'hooks/reduxHooks'
 import { useEffect } from 'react'
+import Footer from 'components/Footer/Footer'
 
 const ProfilePage = () => {
   const userData = useAppSelector((state) => state.user)
@@ -42,6 +43,7 @@ const ProfilePage = () => {
           <p>Пользователь не найден</p>
         )}
       </TopSection>
+      <Footer />
     </>
   )
 }

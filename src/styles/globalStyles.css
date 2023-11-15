@@ -76,3 +76,9 @@ a {
 a:visited {
   color: none;
 }
+@media screen and (max-width: 590px) {
+  .center {
+    padding-left: calc(50% - 278px);
+    padding-right: calc(50% - 278px);
+  }
+}

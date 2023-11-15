@@ -31,8 +31,11 @@ export const userSlice = createSlice({
     setUser: (state, action: PayloadAction<IUserState>) => {
       const userData = action.payload
       Object.assign(state, userData)
-      // const { id, email } = userData
-      // localStorage.setItem('user', JSON.stringify({ id, email }))
+
+      if (userData) {
+        const { id, email } = userData
+        localStorage.setItem('user', JSON.stringify({ id, email }))
+      }
     },
 
     logout: (state) => {

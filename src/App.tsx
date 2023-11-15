@@ -10,6 +10,7 @@ function App() {
 
   const storedUser = localStorage.getItem('user')
   const id = storedUser ? JSON.parse(storedUser).id : null
+  console.log('user id', id)
 
   useEffect(() => {
     const localStorageTokens = localStorage.getItem('tokens')

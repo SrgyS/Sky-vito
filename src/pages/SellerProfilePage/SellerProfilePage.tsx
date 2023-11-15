@@ -7,6 +7,7 @@ import Subtitle from 'components/Advertisements/Subtitle'
 import Profile from 'components/Profile/Profile'
 import Header from 'components/Header/Header'
 import TopSection from 'common/section/TopSection'
+import Footer from 'components/Footer/Footer'
 
 const ProfilePage = () => {
   const { id } = useParams()
@@ -38,6 +39,7 @@ const ProfilePage = () => {
           ))}
         </AdvContainer>
       </TopSection>
+      <Footer />
     </>
   )
 }

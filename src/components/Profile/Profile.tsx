@@ -93,9 +93,7 @@ const Profile = ({ user }: Props) => {
       console.log('formData', formData)
     }
     if (avatar) {
-      const formData = new FormData()
-      formData.append('file', avatar)
-      await uploadAvatar(formData)
+      await uploadAvatar(avatar)
       setAvatar(null)
       setIsFormChanged(false)
     } else {
@@ -112,27 +110,8 @@ const Profile = ({ user }: Props) => {
     }
   }
 
-  // const handleUploadAvatar = async () => {
-  //   if (!access_token || !refresh_token) {
-  //     console.error('Токены не заданы')
-  //     return
-  //   }
-  //   await refreshToken({ access_token, refresh_token })
-  //   const formData = new FormData()
-  //   if (avatar) {
-  //     formData.append('file', avatar)
-  //     await uploadAvatar(formData)
-  //     setAvatar(null)
-  //     setIsFormChanged(false)
-  //   } else {
-  //     console.error('Отсутствует выбранный файл')
-  //   }
-  // }
-
   useEffect(() => {
     if (isUpdateUserSuccess) {
-      console.log('success')
-      console.log('updateUserData', updateUserData)
       dispatch(setUser(updateUserData))
       setIsFormChanged(false)
     }

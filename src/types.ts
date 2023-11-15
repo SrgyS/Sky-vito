@@ -1,9 +1,6 @@
-import { ThunkDispatch } from '@reduxjs/toolkit'
-import { MaybePromise } from '@reduxjs/toolkit/dist/query/tsHelpers'
-
 export interface IImage {
-  id: number
-  ad_id: number
+  id?: number
+  ad_id?: number
   url: string
 }
 
@@ -53,4 +50,11 @@ export interface IRegistrationError {
         details: string
       }
     | unknown
+}
+
+export interface IReview {
+  author: IUser
+  created_on: string
+  id: number
+  text: string
 }

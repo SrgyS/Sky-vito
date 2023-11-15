@@ -24,7 +24,8 @@ import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
 import noAvatarImgUrl from 'assets/img/no-ava.png'
 import SmallProfileImg from 'components/Profile/SmallProfileImg'
 import { useAuth } from 'hooks/useAuth'
-import AddNewAdv from 'components/modals/AddNewAdv'
+import EditAdv from 'components/modals/EditAdv'
+import Reviews from 'components/modals/Reviews'
 
 type Props = {
   cardInfo: IAdv
@@ -32,7 +33,12 @@ type Props = {
 
 const FullAdvCard = ({ cardInfo }: Props) => {
   const { id } = useAuth()
-  const { data, isLoading, error } = useGetAdvCommentsQuery(String(cardInfo.id))
+  const {
+    data: commentsData,
+    isLoading: isCommentsLoading,
+    error: commentsError,
+    isSuccess: isCommentsSuccess,
+  } = useGetAdvCommentsQuery(String(cardInfo.id))
   const location = useLocation()
   const date = formatAdvDate(cardInfo.created_on ?? '')
   const sellsFrom = cardInfo.user?.sells_from
@@ -45,7 +51,9 @@ const FullAdvCard = ({ cardInfo }: Props) => {
     cardInfo.images ? cardInfo.images[0]?.url : null,
   )
   const { access_token, refresh_token } = useAppSelector((state) => state.auth)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
   const [
     refreshToken,
     { isError: isRefreshTokenError, isSuccess: isRefreshTokenSuccess },
@@ -75,19 +83,30 @@ const FullAdvCard = ({ cardInfo }: Props) => {
     await deleteAdv(cardId)
   }
 
-  const openModal = () => {
-    setIsModalOpen(true)
+  const openEditModal = () => {
+    setIsEditModalOpen(true)
   }
-  const closeModal = () => {
-    setIsModalOpen(false)
+  const closeEditModal = () => {
+    setIsEditModalOpen(false)
   }
-  const reviewCount = data?.length
+
+  const openReviewModal = () => {
+    setIsReviewModalOpen(true)
+  }
+  const closeReviewModal = () => {
+    setIsReviewModalOpen(false)
+  }
+  const reviewCount = commentsData?.length
 
   useEffect(() => {
     if (isDeleteAdvSucccess) {
       navigate(`/user/${id}`)
     }
   }, [isDeleteAdvSucccess])
+  useEffect(() => {
+    if (isCommentsSuccess) console.log('Comments', commentsData)
+  }, [isCommentsSuccess])
+
   return (
     <AdvWrapper>
       <div className={S.img_wrapper}>
@@ -112,7 +131,7 @@ const FullAdvCard = ({ cardInfo }: Props) => {
         <h1>{cardInfo.title}</h1>
         <p className={S2.card__date}>{date}</p>
         <p className={S2.card__date}>{cardInfo.user?.city}</p>
-        <p className={S.user_review}>
+        <p className={S.user_review} onClick={() => openReviewModal()}>
           {reviewCount === 0
             ? 'Нет отзывов'
             : `${reviewCount}
@@ -124,7 +143,7 @@ const FullAdvCard = ({ cardInfo }: Props) => {
             <Button
               text="Редактировать"
               className="color_btn"
-              onClick={openModal}
+              onClick={openEditModal}
             />
             <Button
               text="Снять с публикации"
@@ -179,10 +198,15 @@ const FullAdvCard = ({ cardInfo }: Props) => {
         <h2>Описание товара</h2>
         <p>{cardInfo.description}</p>
       </div>
-      <AddNewAdv
-        isOpen={isModalOpen}
-        onClose={closeModal}
+      <EditAdv
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
         editingAdvData={cardInfo}
+      />
+      <Reviews
+        isOpen={isReviewModalOpen}
+        onClose={closeReviewModal}
+        commentsData={commentsData}
       />
     </AdvWrapper>
   )

@@ -36,3 +36,22 @@ display: grid;
 
 }
 
+@media screen and (max-width: 590px) {
+  .adv {
+    &__title {
+font-size: 24px;
+font-style: normal;
+font-weight: 500;
+line-height: 1.2; 
+    }
+    &__container {
+      display: grid;
+        grid-template-columns: repeat(auto-fill, 137px);
+        grid-gap: 10px;
+      }
+  }
+  .main_title {
+    margin-bottom: 20px;
+  } 
+
+}

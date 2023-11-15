@@ -10,23 +10,22 @@ import { useAuth } from 'hooks/useAuth'
 import { logout } from 'store/slices/userSlice'
 import { useAppDispatch } from 'hooks/reduxHooks'
 import AddNewAdv from 'components/modals/AddNewAdv'
+import { setOpenModal } from 'store/slices/advsSlice'
 
 type Props = { handleSearch?: (value: string) => void; searchText?: string }
 
 const Header = ({ handleSearch, searchText }: Props) => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  // const [isModalOpen, setIsModalOpen] = useState(false)
   const location = useLocation()
   const isHomePage = location.pathname === '/'
   const { isAuth, id } = useAuth()
   const isProfilePage = location.pathname === `/user/${id}`
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const openModal = () => {
-    setIsModalOpen(true)
+  const handleOpenModal = () => {
+    dispatch(setOpenModal())
   }
-  const closeModal = () => {
-    setIsModalOpen(false)
-  }
+
   const handleLogout = () => {
     dispatch(logout())
     navigate('/')
@@ -41,7 +40,7 @@ const Header = ({ handleSearch, searchText }: Props) => {
               <Button
                 text="Разместить объявление"
                 className="header_btn"
-                onClick={openModal}
+                onClick={handleOpenModal}
               />
               {isAuth && isProfilePage ? (
                 <Button
@@ -72,7 +71,9 @@ const Header = ({ handleSearch, searchText }: Props) => {
           )}
         </HeaderRow>
       </HeaderWrapper>
-      <AddNewAdv isOpen={isModalOpen} onClose={closeModal} />
+      <AddNewAdv
+      // onClose={closeModal}
+      />
     </>
   )
 }

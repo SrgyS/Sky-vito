@@ -42,10 +42,14 @@ export const advApi = createApi({
         method: 'POST',
         body,
       }),
-      // onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
-      //   const { data } = await queryFulfilled
-      //   dispatch(setTokens(data))
-      // },
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          dispatch(setTokens(data))
+        } catch (error) {
+          console.log('login error', error)
+        }
+      },
     }),
 
     refreshToken: build.mutation({
@@ -54,25 +58,33 @@ export const advApi = createApi({
         method: 'PUT',
         body,
       }),
-      // onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
-      //   const { data } = await queryFulfilled
-      //   dispatch(setTokens(data))
-      // },
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          dispatch(setTokens(data))
+        } catch (error) {
+          console.log('refresh token', error)
+        }
+      },
     }),
 
     getUser: build.query({
       query: () => '/user',
-      providesTags: (result, error, id) => [{ type: 'User', id }],
-      onQueryStarted: async (arg, { queryFulfilled }) => {
-        const { data } = await queryFulfilled
+      providesTags: ['User'],
+      // onQueryStarted: async (arg, { queryFulfilled }) => {
+      //   const { data } = await queryFulfilled
 
-        const userData = {
-          id: data.id,
-          email: data.email,
-        }
+      //   if (data) {
+      //     const userData = {
+      //       id: data.id,
+      //       email: data.email,
+      //     }
 
-        localStorage.setItem('user', JSON.stringify(userData))
-      },
+      //     localStorage.setItem('user', JSON.stringify(userData))
+      //   } else {
+      //     console.error('Ошибка получения данных пользователя')
+      //   }
+      // },
     }),
 
     updateUser: build.mutation({
@@ -91,23 +103,29 @@ export const advApi = createApi({
       invalidatesTags: ['User'],
     }),
     uploadAvatar: build.mutation({
-      query: (formData) => ({
-        url: '/user/avatar',
-        method: 'POST',
-        body: formData,
-      }),
-      invalidatesTags: ['User'],
+      query: (avatar) => {
+        const formData = new FormData()
+        formData.append('file', avatar)
+        return {
+          url: '/user/avatar',
+          method: 'POST',
+          body: formData,
+        }
+      },
+      invalidatesTags: ['User', 'Adv'],
     }),
     getAllAdvs: build.query({
       query: () => ({
         url: '/ads',
       }),
+      providesTags: ['Adv'],
     }),
 
     getAdvById: build.query({
       query: (id: string) => ({
         url: `/ads/${id}`,
       }),
+      providesTags: ['Adv', 'User'],
     }),
     getSellerAdvs: build.query({
       query: (sellerId = null) => ({
@@ -116,12 +134,13 @@ export const advApi = createApi({
           user_id: sellerId,
         },
       }),
-      providesTags: ['Adv'],
+      providesTags: ['Adv', 'User'],
     }),
     getAdvComments: build.query({
       query: (id: string) => ({
         url: `/ads/${id}/comments`,
       }),
+      providesTags: ['Adv', 'User'],
     }),
     addAdv: build.mutation({
       query: (data: IAddNewAdv) => {
@@ -129,8 +148,13 @@ export const advApi = createApi({
         const params = new URLSearchParams()
 
         params.append('title', title)
-        params.append('description', description || '')
-        params.append('price', price?.toString() || '')
+        if (description) {
+          params.append('description', description)
+        }
+
+        if (price) {
+          params.append('price', price.toString())
+        }
 
         const queryString = params.toString()
 
@@ -151,10 +175,55 @@ export const advApi = createApi({
       },
       invalidatesTags: ['Adv'],
     }),
+
+    addTextAdv: build.mutation({
+      query: (formData: IAddNewAdv) => ({
+        url: '/adstext',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['Adv'],
+    }),
+
     deleteAdv: build.mutation({
       query: (id: string | number) => ({
         url: `/ads/${id}`,
         method: 'DELETE',
+      }),
+      invalidatesTags: ['Adv'],
+    }),
+    deleteImg: build.mutation({
+      query: (data) => ({
+        url: `ads/${data.id}/image?file_url=${data.imgUrl}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Adv'],
+    }),
+    uploadImg: build.mutation({
+      query: (uploadImgData) => {
+        const formData = new FormData()
+        formData.append('file', uploadImgData.imgFile)
+        return {
+          url: `ads/${uploadImgData.id}/image`,
+          method: 'POST',
+          body: formData,
+        }
+      },
+      invalidatesTags: ['Adv'],
+    }),
+    editAdv: build.mutation({
+      query: (editData) => ({
+        url: `/ads/${editData.id}`,
+        method: 'PATCH',
+        body: editData,
+      }),
+      invalidatesTags: ['Adv'],
+    }),
+    uploadComment: build.mutation({
+      query: (data) => ({
+        url: `ads/${data.id}/comments`,
+        method: 'POST',
+        body: data.formData,
       }),
       invalidatesTags: ['Adv'],
     }),
@@ -174,4 +243,9 @@ export const {
   useUpdateUserMutation,
   useUploadAvatarMutation,
   useDeleteAdvMutation,
+  useAddTextAdvMutation,
+  useDeleteImgMutation,
+  useEditAdvMutation,
+  useUploadImgMutation,
+  useUploadCommentMutation,
 } = advApi
