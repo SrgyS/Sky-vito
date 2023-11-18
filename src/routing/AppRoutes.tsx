@@ -9,7 +9,6 @@ import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
 import { setTokens } from 'store/slices/authSlice'
 import { useEffect } from 'react'
 import { selectTokens } from 'store/selectors/selectors'
-import { useGetUserQuery } from 'store/services/advApi'
 
 function AppRoutes() {
   const tokens = useAppSelector(selectTokens)

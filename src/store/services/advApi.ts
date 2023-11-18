@@ -1,8 +1,110 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import {
+  BaseQueryApi,
+  BaseQueryFn,
+  createApi,
+  fetchBaseQuery,
+} from '@reduxjs/toolkit/query/react'
+import { useNavigate } from 'react-router-dom'
 import { setTokens } from 'store/slices/authSlice'
-import { setUser } from 'store/slices/userSlice'
+import { logout, setUser } from 'store/slices/userSlice'
 import { RootState } from 'store/store'
 import { IAddNewAdv } from 'types'
+
+// const baseQueryWithReauth: BaseQueryFn<
+//   string,
+//   unknown,
+//   Record<string, unknown>
+// > = async (args, api, extraOptions) => {
+//   const navigate = useNavigate()
+//   const baseQuery = fetchBaseQuery({
+//     baseUrl: 'http://localhost:8090',
+//     prepareHeaders: (headers, { getState }) => {
+//       // const storedTokens = localStorage.getItem('tokens')
+//       // const token = storedTokens ? JSON.parse(storedTokens).access_token : null
+//       const token = (getState() as RootState).auth.access_token
+//       console.log('Использую токен из локал стор', { token })
+//       if (token) {
+//         headers.set('Authorization', `Bearer ${token}`)
+//       }
+//       return headers
+//     },
+//   })
+
+//   const result = await baseQueryWithReauth(args, api, extraOptions)
+
+//   console.log('Результат первого запроса', { result })
+
+//   if (result?.error?.status !== 401) {
+//     return result
+//   }
+
+//   const forceLogout = () => {
+//     api.dispatch(logout())
+//     navigate('/signin')
+//   }
+
+//   let refresh_token: string | null = null
+//   let access_token: string | null = null
+
+//   const tokensData = localStorage.getItem('tokens')
+//   if (tokensData) {
+//     const tokens = JSON.parse(tokensData)
+//     access_token = tokens.access_token
+//     refresh_token = tokens.refresh_token
+//   }
+
+//   console.log('Данные пользователя в сторе refresh', refresh_token)
+
+//   const { auth } = api.getState() as RootState
+//   console.log('Данные пользователя в сторе', { auth })
+
+//   if (!refresh_token) {
+//     console.log('no token')
+//     return forceLogout()
+//   }
+
+//   const refreshResult = (await baseQuery(
+//     {
+//       url: 'auth/login',
+//       method: 'PUT',
+//       body: {
+//         refresh_token,
+//         access_token,
+//       },
+//     },
+//     api,
+//     extraOptions,
+//   )) as {
+//     data: {
+//       access_token: string
+//       refresh_token: string
+//     }
+//   }
+//   console.log('Результат запроса на обновление токена', { refreshResult })
+
+//   if (!refreshResult.data.access_token) {
+//     return forceLogout()
+//   }
+
+//   if (refreshResult.data.access_token) {
+//     api.dispatch(
+//       setTokens({
+//         ...auth,
+//         access_token: refreshResult.data.access_token,
+//         refresh_token: refreshResult.data.refresh_token,
+//       }),
+//     )
+//   }
+
+//   const retryResult = await baseQuery(args, api, extraOptions)
+
+//   // Если повторный запрос выполнился с 401 кодом, то что-то совсем пошло не так, отправляем на принудительную ручную авторизацию
+//   if (retryResult?.error?.status === 401) {
+//     return forceLogout()
+//   }
+//   console.log('Повторный запрос завершился успешно')
+//   return retryResult
+// }
 
 export const advApi = createApi({
   reducerPath: 'advApi',
@@ -70,21 +172,18 @@ export const advApi = createApi({
 
     getUser: build.query({
       query: () => '/user',
+
+      onQueryStarted: async (arg, { queryFulfilled }) => {
+        const { data } = await queryFulfilled
+
+        if (data) {
+          localStorage.setItem('user', JSON.stringify(data))
+          console.log('записал')
+        } else {
+          console.error('Ошибка получения данных пользователя')
+        }
+      },
       providesTags: ['User'],
-      // onQueryStarted: async (arg, { queryFulfilled }) => {
-      //   const { data } = await queryFulfilled
-
-      //   if (data) {
-      //     const userData = {
-      //       id: data.id,
-      //       email: data.email,
-      //     }
-
-      //     localStorage.setItem('user', JSON.stringify(userData))
-      //   } else {
-      //     console.error('Ошибка получения данных пользователя')
-      //   }
-      // },
     }),
 
     updateUser: build.mutation({
@@ -249,3 +348,78 @@ export const {
   useUploadImgMutation,
   useUploadCommentMutation,
 } = advApi
+
+// const baseQueryWithReauth = async (
+//   args: string,
+//   api: BaseQueryApi,
+//   extraOptions: Record<string, unknown>,
+// ) => {
+//   const navigate = useNavigate()
+//   const baseQuery = fetchBaseQuery({
+//     baseUrl: 'http://localhost:8090',
+//     prepareHeaders: (headers, { getState }) => {
+//       const token = (getState() as RootState).auth.access_token
+//       console.log('Использую токен из локал стор', { token })
+//       if (token) {
+//         headers.set('Authorization', `Bearer ${token}`)
+//       }
+//       return headers
+//     },
+//   })
+//   const { auth } = api.getState() as RootState
+//   const { access_token, refresh_token } = auth
+
+//   if (!access_token || !refresh_token) {
+//     console.error('Токены не заданы')
+//     return
+//   }
+//   const forceLogout = () => {
+//     api.dispatch(logout())
+//     navigate('/signin')
+//   }
+//   const refreshResult = (await baseQuery(
+//     {
+//       url: 'auth/login',
+//       method: 'PUT',
+//       body: {
+//         refresh_token,
+//         access_token,
+//       },
+//     },
+//     api,
+//     extraOptions,
+//   )) as {
+//     data: {
+//       access_token: string
+//       refresh_token: string
+//     }
+//   }
+//   console.log('Результат запроса на обновление токена', { refreshResult })
+
+//   if (!refreshResult.data.access_token) {
+//     return forceLogout()
+//   }
+
+//   if (refreshResult.data.access_token) {
+//     api.dispatch(
+//       setTokens({
+//         ...auth,
+//         access_token: refreshResult.data.access_token,
+//         refresh_token: refreshResult.data.refresh_token,
+//       }),
+//     )
+//   }
+
+//   return baseQuery(args, api, extraOptions)
+// }
+
+// export const { useGetUserQuery: useGetUserWithReauthQuery } =
+//   advApi.injectEndpoints({
+//     endpoints: (builder) => ({
+//       getUserWithReauth: builder.query({
+//         query: () => 'user',
+//         baseQuery: baseQueryWithReauth,
+//       }),
+//     }),
+//     overrideExisting: true,
+//   })

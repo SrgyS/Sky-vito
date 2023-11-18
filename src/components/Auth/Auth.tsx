@@ -15,7 +15,10 @@ import {
 import { setTokens } from 'store/slices/authSlice'
 import { setUser } from 'store/slices/userSlice'
 
-import { useAppDispatch } from 'hooks/reduxHooks'
+import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
+import Footer from 'components/Footer/Footer'
+import Search from 'components/Search/Search'
+import { useMobileStatus } from 'hooks/useMobileStatus'
 
 type FormErrors = {
   [key: string]: string
@@ -47,7 +50,7 @@ const Auth = () => {
     setFormData({ ...formData, [name]: value })
     setFormError({})
   }
-
+  const { isMobile } = useMobileStatus()
   const [
     registerUser,
     {
@@ -130,7 +133,7 @@ const Auth = () => {
     }
     if (isRegisterSuccess) {
       dispatch(setUser(registerData))
-      // navigate(`/`)
+      // setIsAuthenticated(true)
     }
   }, [isLoginSuccess, isRegisterSuccess])
 
@@ -142,76 +145,80 @@ const Auth = () => {
   }, [isAuthenticated, userData])
 
   return (
-    <div className={S.wrapper}>
-      <form onSubmit={isSignUp ? handleRegister : handleLogin}>
-        <div className={S.logo_wrapper}>
-          <img src={logoUrl} alt="logo" />
-        </div>
-        <input
-          type="email"
-          placeholder="email"
-          name="email"
-          onChange={handleChange}
-        />
-        {formError.email && <FormError text={`${formError.email}`} />}
-        <input
-          type="password"
-          placeholder="Пароль"
-          name="password"
-          onChange={handleChange}
-        />
-        {formError.password && (
-          <FormError text={formError.password}></FormError>
-        )}
-        {isSignUp && (
-          <>
-            <input
-              type="password"
-              placeholder="Повторите пароль"
-              name="repeatPassword"
-              onChange={handleChange}
-            />
-            {formError.repeatPassword && (
-              <FormError text={formError.repeatPassword}></FormError>
-            )}
-            <input
-              type="text"
-              placeholder="Имя (необязательно)"
-              name="name"
-              onChange={handleChange}
-            />
-            <input
-              type="text"
-              placeholder="Фамилия (необязательно)"
-              name="surname"
-              onChange={handleChange}
-            />
-            <input
-              type="text"
-              placeholder="Город (необязательно)"
-              name="city"
-              onChange={handleChange}
-            />
-          </>
-        )}
-        <div>
-          <Button
-            className="color_btn"
-            type="submit"
-            text={isSignUp ? 'Зарегистрироваться' : 'Войти'}
-          ></Button>
-          <Link to="/signup">
-            {!isSignUp && (
-              <Button
-                type="button"
-                text="Зарегистрироваться"
-                className="signup_btn"
-              ></Button>
-            )}
-          </Link>
-        </div>
-      </form>
-    </div>
+    <>
+      {isMobile && <Search />}
+      <div className={S.wrapper}>
+        <form onSubmit={isSignUp ? handleRegister : handleLogin}>
+          <div className={S.logo_wrapper}>
+            <img src={logoUrl} alt="logo" />
+          </div>
+          <input
+            type="email"
+            placeholder="email"
+            name="email"
+            onChange={handleChange}
+          />
+          {formError.email && <FormError text={`${formError.email}`} />}
+          <input
+            type="password"
+            placeholder="Пароль"
+            name="password"
+            onChange={handleChange}
+          />
+          {formError.password && (
+            <FormError text={formError.password}></FormError>
+          )}
+          {isSignUp && (
+            <>
+              <input
+                type="password"
+                placeholder="Повторите пароль"
+                name="repeatPassword"
+                onChange={handleChange}
+              />
+              {formError.repeatPassword && (
+                <FormError text={formError.repeatPassword}></FormError>
+              )}
+              <input
+                type="text"
+                placeholder="Имя (необязательно)"
+                name="name"
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                placeholder="Фамилия (необязательно)"
+                name="surname"
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                placeholder="Город (необязательно)"
+                name="city"
+                onChange={handleChange}
+              />
+            </>
+          )}
+          <div className={S.form_btn_wrapper}>
+            <Button
+              className="color_btn"
+              type="submit"
+              text={isSignUp ? 'Зарегистрироваться' : 'Войти'}
+            ></Button>
+            <Link to="/signup">
+              {!isSignUp && (
+                <Button
+                  type="button"
+                  text="Зарегистрироваться"
+                  className="signup_btn"
+                ></Button>
+              )}
+            </Link>
+          </div>
+        </form>
+      </div>
+      <Footer />
+    </>
   )
 }
 

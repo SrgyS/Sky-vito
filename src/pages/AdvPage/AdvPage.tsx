@@ -3,30 +3,45 @@ import TopSection from 'common/section/TopSection'
 import FullAdvCard from 'components/Advertisements/FullAdvCard/FullAdvCard'
 import Footer from 'components/Footer/Footer'
 import Header from 'components/Header/Header'
+import Search from 'components/Search/Search'
+import Slider from 'components/Slider/Slider'
+import { useAppDispatch } from 'hooks/reduxHooks'
+import { useMobileStatus } from 'hooks/useMobileStatus'
 
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useGetAdvByIdQuery } from 'store/services/advApi'
+import { setCurrentAdv } from 'store/slices/advsSlice'
 
 const AdvPage = () => {
   const { id } = useParams()
   if (!id) {
     return <p>Объявление не найдено</p>
   }
-
-  const { data, isLoading, error } = useGetAdvByIdQuery(id)
+  const dispatch = useAppDispatch()
+  const {
+    data: advData,
+    isLoading: isAdvLoading,
+    error: advError,
+  } = useGetAdvByIdQuery(id)
+  const { isMobile } = useMobileStatus()
 
   useEffect(() => {
-    console.log('adv', data)
-  }, [data])
+    if (advData) {
+      dispatch(setCurrentAdv(advData))
+    }
+    console.log('adv', advData)
+  }, [advData])
 
   return (
     <>
       <Header />
+      {isMobile && <Slider images={advData?.images} />}
       <TopSection>
-        {isLoading && <p>Загрузка...</p>}
-        {error && <p>Ошибка загрузки</p>}
-        {data && <FullAdvCard cardInfo={data} />}
+        <Search />
+        {isAdvLoading && <p>Загрузка...</p>}
+        {advError && <p>Ошибка загрузки</p>}
+        {advData && <FullAdvCard cardInfo={advData} />}
       </TopSection>
       <Footer />
     </>

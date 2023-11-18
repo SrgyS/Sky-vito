@@ -10,6 +10,7 @@ import MiniAdvCard from 'components/Advertisements/MiniAdvCard/MiniAdvCard'
 
 import Header from 'components/Header/Header'
 import Footer from 'components/Footer/Footer'
+import Search from 'components/Search/Search'
 
 const MainPage = () => {
   const { data, isLoading, error } = useGetAllAdvsQuery({})
@@ -62,8 +63,10 @@ const MainPage = () => {
 
   return (
     <>
-      <Header handleSearch={handleSearch} searchText={searchText} />
+      <Header />
+
       <TopSection>
+        <Search handleSearch={handleSearch} searchText={searchText} />
         <Title className={'main_title'}>Объявления</Title>
         <AdvContainer>
           {isLoading && <p>Загрузка...</p>}

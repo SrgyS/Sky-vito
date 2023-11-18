@@ -1,11 +1,7 @@
 .header {
   &__wrapper {
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 79px 136px;
-    grid-column-gap: 0px;
-    grid-row-gap: 0px;
+    height: 79px;
     position: fixed;
     top: 0;
     left: 0;
@@ -18,38 +14,18 @@
     gap: 60px;
     background-color: #fff;
   }
-  &__search {
-    display: flex;
-    gap: 10px;
-    justify-content: space-between;
-    width: 100%;
-  }
 }
 
 .first__row {
   background-color: #009ee4;
   justify-content: flex-end;
+  height: 100%;
 }
 
 @media screen and (max-width: 590px) {
-  .first__row {
-    display: none;
-  }
   .header {
-    &__search {
-      button {
-        display: none;
-      }
-      input {
-        border-radius: 30px;
-        height: 32px;
-        border: none;
-      }
-    }
-    &__row {
-      background-color: #009ee4;
-      gap: 10px;
-      height: 55px;
+    &__wrapper {
+      display: none;
     }
   }
 }

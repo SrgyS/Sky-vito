@@ -26,6 +26,8 @@ import SmallProfileImg from 'components/Profile/SmallProfileImg'
 import { useAuth } from 'hooks/useAuth'
 import EditAdv from 'components/modals/EditAdv'
 import Reviews from 'components/modals/Reviews'
+import { useMobileStatus } from 'hooks/useMobileStatus'
+import Slider from 'components/Slider/Slider'
 
 type Props = {
   cardInfo: IAdv
@@ -33,6 +35,7 @@ type Props = {
 
 const FullAdvCard = ({ cardInfo }: Props) => {
   const { id } = useAuth()
+  const { isMobile } = useMobileStatus()
   const {
     data: commentsData,
     isLoading: isCommentsLoading,
@@ -109,35 +112,37 @@ const FullAdvCard = ({ cardInfo }: Props) => {
 
   return (
     <AdvWrapper>
-      <div className={S.img_wrapper}>
-        {cardInfo.images && cardInfo.images.length > 0 ? (
-          <BigImg src={`${baseUrl}/${selectedImg}`} alt={cardInfo.title} />
-        ) : (
-          <BigImg src={noImgUrl} alt="no image" />
-        )}
-        <div className={S.small_img_wrapper}>
-          {cardInfo.images?.map((img) => (
-            <SmallImg
-              src={`${baseUrl}/${img.url}`}
-              alt={cardInfo.title}
-              key={img.id}
-              onClick={() => hadleImgClick(img)}
-              selected={selectedImg === img.url ? S.small_img_selected : ''}
-            />
-          ))}
+      {!isMobile && (
+        <div className={S.img_wrapper}>
+          {cardInfo.images && cardInfo.images.length > 0 ? (
+            <BigImg src={`${baseUrl}/${selectedImg}`} alt={cardInfo.title} />
+          ) : (
+            <BigImg src={noImgUrl} alt="no image" />
+          )}
+          <div className={S.small_img_wrapper}>
+            {cardInfo.images?.map((img) => (
+              <SmallImg
+                src={`${baseUrl}/${img.url}`}
+                alt={cardInfo.title}
+                key={img.id}
+                onClick={() => hadleImgClick(img)}
+                selected={selectedImg === img.url ? S.small_img_selected : ''}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <div>
         <h1>{cardInfo.title}</h1>
-        <p className={S2.card__date}>{date}</p>
-        <p className={S2.card__date}>{cardInfo.user?.city}</p>
+        <p className={S.info_date}>{date}</p>
+        <p className={S.info_city}>{cardInfo.user?.city}</p>
         <p className={S.user_review} onClick={() => openReviewModal()}>
           {reviewCount === 0
             ? 'Нет отзывов'
             : `${reviewCount}
-          ${declineWord(reviewCount)}`}
+      ${declineWord(reviewCount)}`}
         </p>
-        <p className={S2.card__price}>{formatedPrice} ₽</p>
+        <p className={S.info_price}>{formatedPrice} ₽</p>
         {isUserAdvPage && cardInfo.id ? (
           <div className={S.btn_box}>
             <Button

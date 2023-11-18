@@ -8,6 +8,7 @@ import Profile from 'components/Profile/Profile'
 import Header from 'components/Header/Header'
 import TopSection from 'common/section/TopSection'
 import Footer from 'components/Footer/Footer'
+import Search from 'components/Search/Search'
 
 const ProfilePage = () => {
   const { id } = useParams()
@@ -30,6 +31,7 @@ const ProfilePage = () => {
     <>
       <Header />
       <TopSection>
+        <Search />
         <Profile user={userData} />
         <Subtitle>Товары продавца</Subtitle>
         <AdvContainer>

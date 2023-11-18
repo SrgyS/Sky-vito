@@ -9,6 +9,7 @@ import {
 import { useAppSelector } from 'hooks/reduxHooks'
 import { useParams } from 'react-router-dom'
 import { baseUrl } from 'utils/utils'
+import { useAuth } from 'hooks/useAuth'
 
 type Props = {
   isOpen: boolean
@@ -19,6 +20,7 @@ type Props = {
 const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
   const { access_token, refresh_token } = useAppSelector((state) => state.auth)
   const { id } = useParams()
+  const { isAuth } = useAuth()
   const initialFormData = {
     text: '',
   }
@@ -99,7 +101,11 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
               value={formData.text}
             ></textarea>
           </div>
-          <Button text="Опубликовать" className="color_btn" />
+          <Button
+            text="Опубликовать"
+            className="color_btn"
+            disabled={!isAuth}
+          />
         </form>
 
         <div className={S.reviews_block}>

@@ -24,10 +24,10 @@ To get started with the project, follow these steps:
 
 ## Tech stack
 
-React
-Typescript
-Redux
-RTK Query
-REST API
-React Router for navigation
-SCSS modules for styling
+- React
+- Typescript
+- Redux
+- RTK Query
+- REST API
+- React Router for navigation
+- SCSS modules for styling

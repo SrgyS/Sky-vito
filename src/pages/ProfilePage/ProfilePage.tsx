@@ -10,6 +10,7 @@ import { IAdv } from 'types'
 import { useAppSelector } from 'hooks/reduxHooks'
 import { useEffect } from 'react'
 import Footer from 'components/Footer/Footer'
+import Search from 'components/Search/Search'
 
 const ProfilePage = () => {
   const userData = useAppSelector((state) => state.user)
@@ -26,10 +27,11 @@ const ProfilePage = () => {
     <>
       <Header />
       <TopSection>
+        <Search />
         {userData.id ? (
           <>
             <Profile user={userData} />
-            <Subtitle>Мои товары</Subtitle>
+            <Subtitle className="advs_title">Мои товары</Subtitle>
             <AdvContainer>
               {!isLoading && error && <p>Что-то пошло не так...</p>}
               {data.length > 0

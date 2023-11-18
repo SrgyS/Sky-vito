@@ -1,4 +1,4 @@
-import S from './Header.module.scss'
+import S from './Search.module.scss'
 import { useState } from 'react'
 import Button from 'common/buttons/Button'
 
@@ -16,7 +16,7 @@ const SearchInput = ({ onSearch, value }: Props) => {
     onSearch(searchValue)
   }
   return (
-    <form className={S.header__search} onSubmit={handleSearchClick}>
+    <form className={S.search} onSubmit={handleSearchClick}>
       <input
         type="search"
         value={searchValue}

@@ -10,11 +10,12 @@ type Props = {
 }
 
 const Button = ({ text, phone, onClick, type, className, disabled }: Props) => {
-  const buttonClass = className ? `${S[className]}` : ''
+  const classes = className ? className.split(' ') : []
+  const btnClasses = classes.map((cls) => S[cls]).join(' ')
 
   return (
     <button
-      className={buttonClass}
+      className={btnClasses}
       onClick={onClick}
       type={type as 'button' | 'submit' | 'reset'}
       disabled={disabled}

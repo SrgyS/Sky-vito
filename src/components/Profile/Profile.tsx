@@ -27,6 +27,8 @@ const Profile = ({ user }: Props) => {
   }
   const { id } = useParams()
 
+  console.log('ava user', user)
+
   const [formData, setFormData] = useState<IBaseFormData>(initialFormData)
   const [isFormChanged, setIsFormChanged] = useState(false)
   const [avatar, setAvatar] = useState<File | null>(null)
@@ -124,7 +126,7 @@ const Profile = ({ user }: Props) => {
   }, [isUploadAvatarSuccess, avatar])
 
   return (
-    <div>
+    <div className={S.profile_wrapper}>
       {isProfilePage ? (
         <>
           <Title>

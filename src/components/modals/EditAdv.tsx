@@ -122,13 +122,13 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
     }
     console.log('editAdv', editData)
     await editAdv(editData)
+
     if (imgFile && editingAdvData && editingAdvData.id) {
       const uploadImgData = { imgFile, id: editingAdvData.id }
       console.log('uploadImg', uploadImgData)
       await uploadImg(uploadImgData)
       setImgFile(null)
     }
-    onClose()
   }
 
   const handleImgDelete = async (id: number, imgUrl: string) => {
@@ -165,10 +165,18 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
 
   useEffect(() => {
     if (!isOpen) {
-      console.log('reset')
       resetState()
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (isEditAddAdvSuccess) {
+      setIsFormChanged(false)
+    }
+    if (isUploadImgSuccess) {
+      setIsFormChanged(false)
+    }
+  }, [isEditAddAdvSuccess, isUploadImgSuccess])
 
   return (
     <div className={isOpen ? `${S.container} ${S.show}` : S.container}>
