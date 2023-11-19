@@ -24,6 +24,7 @@ const AdvPage = () => {
     isLoading: isAdvLoading,
     error: advError,
   } = useGetAdvByIdQuery(id)
+
   const { isMobile } = useMobileStatus()
 
   useEffect(() => {

@@ -36,6 +36,7 @@ type Props = {
 const FullAdvCard = ({ cardInfo }: Props) => {
   const { id } = useAuth()
   const { isMobile } = useMobileStatus()
+  const dispatch = useAppDispatch()
   const {
     data: commentsData,
     isLoading: isCommentsLoading,
@@ -95,6 +96,7 @@ const FullAdvCard = ({ cardInfo }: Props) => {
 
   const openReviewModal = () => {
     setIsReviewModalOpen(true)
+    console.log(`openReviewModal`)
   }
   const closeReviewModal = () => {
     setIsReviewModalOpen(false)
@@ -152,9 +154,11 @@ const FullAdvCard = ({ cardInfo }: Props) => {
             />
             <Button
               text="Снять с публикации"
-              onClick={() => {
+              onClick={async () => {
                 if (cardInfo.id !== undefined) {
-                  handleDeleteAdv(cardInfo.id)
+                  await handleDeleteAdv(cardInfo.id)
+                  dispatch(setCurrentAdv(null))
+                  navigate(`/user/${id}`)
                 } else {
                   console.log('delete error')
                 }

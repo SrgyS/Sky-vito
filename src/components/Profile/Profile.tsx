@@ -13,25 +13,26 @@ import {
   useUploadAvatarMutation,
   useRefreshTokenMutation,
 } from 'store/services/advApi'
-import { IBaseFormData } from 'types'
+import { IBaseFormData, IFormAuthData, IFormProfileData } from 'types'
 import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import FormError from 'components/Error/FormError'
 
 type Props = { user: IUserState }
 
 const Profile = ({ user }: Props) => {
-  const initialFormData: IBaseFormData = {
+  const [initialFormData, setInitialFormData] = useState<IFormProfileData>({
     name: user.name || '',
     surname: user.surname || '',
     city: user.city || '',
     phone: user.phone || '',
-  }
+    avatar: null,
+  })
   const { id } = useParams()
 
-  console.log('ava user', user)
-
-  const [formData, setFormData] = useState<IBaseFormData>(initialFormData)
-  const [isFormChanged, setIsFormChanged] = useState(false)
-  const [avatar, setAvatar] = useState<File | null>(null)
+  // const [formData, setFormData] = useState<IBaseFormData>(initialFormData)
+  // const [isFormChanged, setIsFormChanged] = useState(false)
+  // const [avatar, setAvatar] = useState<File | null>(null)
 
   const { access_token, refresh_token } = useAppSelector((state) => state.auth)
 
@@ -77,53 +78,103 @@ const Profile = ({ user }: Props) => {
   const sellsFrom =
     user && user.sells_from ? formatUserDate(user.sells_from) : ''
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target
+  //   setFormData({ ...formData, [name]: value })
 
-    setIsFormChanged(true)
-  }
-  const handleUpdateUser = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (formData) {
+  //   setIsFormChanged(true)
+  // }
+  // const handleUpdateUser = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault()
+  //   if (formData) {
+  //     if (!access_token || !refresh_token) {
+  //       console.error('Токены не заданы')
+  //       return
+  //     }
+  //     await refreshToken({ access_token, refresh_token })
+  //     await updateUser(formData)
+  //     console.log('formData', formData)
+  //   }
+  //   if (avatar) {
+  //     await uploadAvatar(avatar)
+  //     setAvatar(null)
+  //     setIsFormChanged(false)
+  //   } else {
+  //     console.error('Отсутствует выбранный файл')
+  //   }
+  // }
+  // const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files && e.target.files[0]
+  //   if (file && file.type.startsWith('image/')) {
+  //     setAvatar(file || null)
+  //     setIsFormChanged(true)
+  //   } else {
+  //     console.error('Выбранный файл не является изображением')
+  //   }
+  // }
+  //-------------form hook--------------------------------
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isDirty },
+    watch,
+    setValue,
+    reset,
+  } = useForm<IFormProfileData>({
+    defaultValues: initialFormData,
+    mode: 'onBlur',
+  })
+
+  const onSubmit: SubmitHandler<IFormProfileData> = async (data) => {
+    console.log('data 1', data)
+    if (data) {
+      const { avatar, ...userData } = data
+      console.log('new avatar', avatar)
+      console.log('new udata', userData)
       if (!access_token || !refresh_token) {
         console.error('Токены не заданы')
         return
       }
       await refreshToken({ access_token, refresh_token })
-      await updateUser(formData)
-      console.log('formData', formData)
+
+      !avatar && (await updateUser(userData))
     }
+
     if (avatar) {
-      await uploadAvatar(avatar)
-      setAvatar(null)
-      setIsFormChanged(false)
-    } else {
-      console.error('Отсутствует выбранный файл')
+      console.log('avatar send', avatar[0])
+      await uploadAvatar(avatar[0])
     }
   }
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0]
-    if (file && file.type.startsWith('image/')) {
-      setAvatar(file || null)
-      setIsFormChanged(true)
-    } else {
-      console.error('Выбранный файл не является изображением')
-    }
-  }
+
+  const avatar = watch('avatar')
+
+  // ----------------------------------------------------------------
+  // useEffect(() => {
+  //   setValue('name', user.name || '')
+  //   setValue('surname', user.surname || '')
+  //   setValue('city', user.city || '')
+  //   setValue('phone', user.phone || '')
+  // }, [user, setValue])
 
   useEffect(() => {
     if (isUpdateUserSuccess) {
       dispatch(setUser(updateUserData))
-      setIsFormChanged(false)
+      reset({ ...watch() })
     }
   }, [isUpdateUserSuccess, updateUserData])
 
   useEffect(() => {
-    console.log('ava', isUploadAvatarSuccess)
-    console.log('avadata', avatarData)
-    dispatch(setUser(avatarData))
-  }, [isUploadAvatarSuccess, avatar])
+    if (isUploadAvatarSuccess) {
+      dispatch(setUser(avatarData))
+      setValue('avatar', null)
+    }
+  }, [isUploadAvatarSuccess])
+
+  // useEffect(() => {
+  //   console.log('ava', isUploadAvatarSuccess)
+  //   console.log('avadata', avatarData)
+  //   dispatch(setUser(avatarData))
+  // }, [isUploadAvatarSuccess, avatar])
 
   return (
     <div className={S.profile_wrapper}>
@@ -140,7 +191,10 @@ const Profile = ({ user }: Props) => {
       <div className={S.profile__info}>
         <div className={S.img_box}>
           {avatar ? (
-            <ProfileImg src={URL.createObjectURL(avatar)} alt="avatar image" />
+            <ProfileImg
+              src={avatar && URL.createObjectURL(avatar[0])}
+              alt="avatar image"
+            />
           ) : user.avatar ? (
             <ProfileImg src={`${baseUrl}/${user.avatar}`} alt="avatar image" />
           ) : (
@@ -152,62 +206,117 @@ const Profile = ({ user }: Props) => {
               <label className={S.change_img} htmlFor="fileInput">
                 Загрузить
               </label>
-              <input
-                className={S.hidden_input}
-                type="file"
-                id="fileInput"
-                onChange={handleFileChange}
-              />
             </>
           )}
         </div>
         <div className={S.profile__details}>
           {isProfilePage ? (
-            <form className={S.profile__form} onSubmit={handleUpdateUser}>
+            <form className={S.profile__form} onSubmit={handleSubmit(onSubmit)}>
+              <input
+                className={S.hidden_input}
+                type="file"
+                id="fileInput"
+                {...register('avatar')}
+              />
               <div className={S.form__group}>
                 <label htmlFor="name">Имя</label>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
                   placeholder="Имя"
-                  onChange={handleChange}
+                  {...register('name', {
+                    minLength: {
+                      value: 2,
+                      message: 'Минимум 2 символа',
+                    },
+                    maxLength: {
+                      value: 15,
+                      message: 'Максимально 15 символов',
+                    },
+                  })}
+                  // value={formData.name}
+
+                  // onChange={handleChange}
                 />
+                {errors.name && (
+                  <FormError text={errors.name.message}></FormError>
+                )}
               </div>
               <div className={S.form__group}>
-                <label htmlFor="lname">Фамилия</label>
+                <label htmlFor="surname">Фамилия</label>
                 <input
                   type="text"
-                  name="surname"
-                  value={formData.surname}
+                  // name="surname"
+                  // value={formData.surname}
                   placeholder="Фамилия"
-                  onChange={handleChange}
+                  // onChange={handleChange}
+                  {...register('surname', {
+                    minLength: {
+                      value: 2,
+                      message: 'Минимум 2 символа',
+                    },
+                    maxLength: {
+                      value: 15,
+                      message: 'Максимально 15 символов',
+                    },
+                  })}
                 />
+                {errors.surname && (
+                  <FormError text={errors.surname.message}></FormError>
+                )}
               </div>
               <div className={S.form__group}>
                 <label htmlFor="city">Город</label>
                 <input
                   type="text"
-                  name="city"
-                  value={formData.city}
+                  // name="city"
+                  // value={formData.city}
                   placeholder="Город"
-                  onChange={handleChange}
+                  {...register('city', {
+                    minLength: {
+                      value: 4,
+                      message: 'Минимум 2 символа',
+                    },
+                    maxLength: {
+                      value: 15,
+                      message: 'Максимально 15 символов',
+                    },
+                  })}
                 />
+                {errors.city && (
+                  <FormError text={errors.city.message}></FormError>
+                )}
               </div>
               <div className={S.form__group}>
                 <label htmlFor="phone">Телефон</label>
                 <input
                   type="tel"
                   // pattern="\+7\s?[\(]{0,1}9[0-9]{2}[\)]{0,1}\s?\d{3}[-]{0,1}\d{2}[-]{0,1}\d{2}"
-                  name="phone"
-                  value={formData.phone}
+                  // name="phone"
+                  // value={formData.phone}
                   placeholder="Телефон"
-                  onChange={handleChange}
+                  // onChange={handleChange}
+                  {...register('phone', {
+                    minLength: {
+                      value: 6,
+                      message: 'Минимум 6 цифр',
+                    },
+                    maxLength: {
+                      value: 15,
+                      message: 'Максимально 15 цифр',
+                    },
+                    pattern: {
+                      value: /^\+?\d+$/,
+                      message: 'допускаются только цифры',
+                    },
+                  })}
                 />
+                {errors.phone && (
+                  <FormError text={errors.phone.message}></FormError>
+                )}
               </div>
               <Button
-                disabled={!isFormChanged}
-                type="submit"
+                disabled={!isDirty}
+                // type="submit"
                 className="color_btn"
                 text="Сохранить"
               ></Button>

@@ -12,6 +12,7 @@ import { useRefreshTokenMutation } from 'store/services/advApi'
 import Button from 'common/buttons/Button'
 import { nanoid } from 'nanoid'
 import { baseUrl } from 'utils/utils'
+import ModalPortal from './ModalPortal'
 
 type Props = {
   isOpen: boolean
@@ -178,104 +179,108 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
     }
   }, [isEditAddAdvSuccess, isUploadImgSuccess])
 
-  return (
-    <div className={isOpen ? `${S.container} ${S.show}` : S.container}>
-      <div className={S.modal_block}>
-        <h3 className={S.modal_title}>Редактировать объявление</h3>
-        <div className={S.close_btn} onClick={() => onClose()}>
-          <div className={S.close_btn_line}></div>
-        </div>
-        <form className={S.form} action="#" onSubmit={handleEditAdv}>
-          <div className={S.form_block}>
-            <label htmlFor="title">Название</label>
-            <input
-              value={formData.title}
-              className={S.form_input}
-              type="text"
-              name="title"
-              placeholder="Введите название"
-              onChange={handleChange}
-            />
+  return isOpen ? (
+    <ModalPortal>
+      <div className={`${S.container} ${S.show}`}>
+        <div className={S.modal_block}>
+          <h3 className={S.modal_title}>Редактировать объявление</h3>
+          <div className={S.close_btn} onClick={() => onClose()}>
+            <div className={S.close_btn_line}></div>
           </div>
-          <div className={S.form_block}>
-            <label htmlFor="description">Описание</label>
-            <textarea
-              className={S.form_textarea}
-              name="description"
-              cols={10}
-              rows={10}
-              placeholder="Введите описание"
-              onChange={handleChange}
-              value={formData.description}
-            ></textarea>
-          </div>
-          <div className={S.form_block}>
-            <p className={S.form_p}>
-              Фотографии товара<span>не более 5 фотографий</span>
-            </p>
-            <div className={S.form_img_bar}>
-              {formData.images &&
-                formData.images.map((image, index) => {
-                  const uniqueId = nanoid()
-                  return (
-                    <label
-                      key={uniqueId}
-                      htmlFor={`fileInput-${uniqueId}`}
-                      className={S.form_img}
-                    >
-                      {image && image.url && (
-                        <>
-                          <img src={`${baseUrl}/${image.url}`} alt="" />
-                          <Button
-                            text="удалить"
-                            className="delete_btn"
-                            onClick={() =>
-                              editingAdvData?.id !== undefined &&
-                              handleImgDelete(editingAdvData?.id, image.url)
-                            }
-                          />
-                        </>
-                      )}
-                    </label>
-                  )
-                })}
-              {formData.images && formData.images.length < 5 ? (
-                <label htmlFor="fileInput" className={S.form_img}>
-                  {imgFile && <img src={URL.createObjectURL(imgFile)} alt="" />}
-
-                  <div className={S.form_img_cover}></div>
-                  <input
-                    className={S.hidden}
-                    type="file"
-                    id="fileInput"
-                    onChange={handleFileChange}
-                  />
-                </label>
-              ) : (
-                ''
-              )}
+          <form className={S.form} action="#" onSubmit={handleEditAdv}>
+            <div className={S.form_block}>
+              <label htmlFor="title">Название</label>
+              <input
+                value={formData.title}
+                className={S.form_input}
+                type="text"
+                name="title"
+                placeholder="Введите название"
+                onChange={handleChange}
+              />
             </div>
-          </div>
-          <div className={`${S.form_block} ${S.block_price}`}>
-            <label htmlFor="price">Цена</label>
-            <input
-              className={S.form_input_price}
-              type="text"
-              name="price"
-              id="formEditPrice"
-              onChange={handleChange}
-              value={formData.price}
+            <div className={S.form_block}>
+              <label htmlFor="description">Описание</label>
+              <textarea
+                className={S.form_textarea}
+                name="description"
+                cols={10}
+                rows={10}
+                placeholder="Введите описание"
+                onChange={handleChange}
+                value={formData.description}
+              ></textarea>
+            </div>
+            <div className={S.form_block}>
+              <p className={S.form_p}>
+                Фотографии товара<span>не более 5 фотографий</span>
+              </p>
+              <div className={S.form_img_bar}>
+                {formData.images &&
+                  formData.images.map((image, index) => {
+                    const uniqueId = nanoid()
+                    return (
+                      <label
+                        key={uniqueId}
+                        htmlFor={`fileInput-${uniqueId}`}
+                        className={S.form_img}
+                      >
+                        {image && image.url && (
+                          <>
+                            <img src={`${baseUrl}/${image.url}`} alt="" />
+                            <Button
+                              text="удалить"
+                              className="delete_btn"
+                              onClick={() =>
+                                editingAdvData?.id !== undefined &&
+                                handleImgDelete(editingAdvData?.id, image.url)
+                              }
+                            />
+                          </>
+                        )}
+                      </label>
+                    )
+                  })}
+                {formData.images && formData.images.length < 5 ? (
+                  <label htmlFor="fileInput" className={S.form_img}>
+                    {imgFile && (
+                      <img src={URL.createObjectURL(imgFile)} alt="" />
+                    )}
+
+                    <div className={S.form_img_cover}></div>
+                    <input
+                      className={S.hidden}
+                      type="file"
+                      id="fileInput"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                ) : (
+                  ''
+                )}
+              </div>
+            </div>
+            <div className={`${S.form_block} ${S.block_price}`}>
+              <label htmlFor="price">Цена</label>
+              <input
+                className={S.form_input_price}
+                type="text"
+                name="price"
+                id="formEditPrice"
+                onChange={handleChange}
+                value={formData.price}
+              />
+              <div className={S.input_price_cover}></div>
+            </div>
+            <Button
+              className="color_btn"
+              disabled={!isFormChanged}
+              text="Сохранить"
             />
-            <div className={S.input_price_cover}></div>
-          </div>
-          <Button
-            className="color_btn"
-            disabled={!isFormChanged}
-            text="Сохранить"
-          />
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
-  )
+    </ModalPortal>
+  ) : null
 }
 export default EditAdv

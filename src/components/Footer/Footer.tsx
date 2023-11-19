@@ -7,12 +7,13 @@ import { useAppDispatch } from 'hooks/reduxHooks'
 import { useAuth } from 'hooks/useAuth'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { setCloseModal, setOpenModal } from 'store/slices/advsSlice'
+import { resetTokens } from 'store/slices/authSlice'
 import { logout } from 'store/slices/userSlice'
 
 const Footer = () => {
   const { isAuth, id } = useAuth()
   const location = useLocation()
-  const isProfilePage = location.pathname === `/user/${id}`
+  const isProfilePage = location.pathname.startsWith('/user/')
   const dispatch = useAppDispatch()
   const handleOpenModal = () => {
     dispatch(setOpenModal())
@@ -25,6 +26,7 @@ const Footer = () => {
 
   const handleLogout = () => {
     dispatch(logout())
+    dispatch(resetTokens())
     navigate('/')
   }
   return (

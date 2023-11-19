@@ -1,15 +1,13 @@
 import S from './Auth.module.scss'
 import logoUrl from 'assets/img/logo_modal.png'
-
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Button from 'common/buttons/Button'
 import { useEffect, useState } from 'react'
-import { IFormAuthData } from 'types'
-import FormError from 'components/Error/FormError'
+import { IErrorResponse, IFormAuthData } from 'types'
 import {
   useLoginUserMutation,
   useRegisterUserMutation,
-  useGetUserQuery,
+  useGetUserMutation,
 } from 'store/services/advApi'
 
 import { setTokens } from 'store/slices/authSlice'
@@ -19,37 +17,42 @@ import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
 import Footer from 'components/Footer/Footer'
 import Search from 'components/Search/Search'
 import { useMobileStatus } from 'hooks/useMobileStatus'
-
-type FormErrors = {
-  [key: string]: string
-}
+import { SubmitHandler, useForm } from 'react-hook-form'
+import FormError from 'components/Error/FormError'
 
 const Auth = () => {
-  const initialFormData: IFormAuthData = {
-    email: '',
-    password: '',
-    repeatPassword: '',
-    name: '',
-    surname: '',
-    city: '',
-  }
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  const [formData, setFormData] = useState<IFormAuthData>(initialFormData)
-  const [formError, setFormError] = useState<FormErrors>({})
-
   const location = useLocation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-
-  const { email, password } = formData
+  const [formData, setFormData] = useState<IFormAuthData>()
   const isSignUp = location.pathname === '/signup'
+  const tokens = useAppSelector((state) => state.auth)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
-    setFormError({})
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm<IFormAuthData>({
+    defaultValues: {},
+    mode: 'onTouched',
+  })
+  const password = watch('password')
+  const email = watch('email')
+
+  const onSubmit: SubmitHandler<IFormAuthData> = (data) => {
+    if (!isSignUp) {
+      handleLogin(data)
+    } else {
+      handleRegister(data)
+    }
+
+    setFormData(data)
   }
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
   const { isMobile } = useMobileStatus()
   const [
     registerUser,
@@ -73,130 +76,182 @@ const Auth = () => {
     },
   ] = useLoginUserMutation()
 
-  const {
-    data: userData,
-    error: userError,
-    isLoading: isUserLoading,
-  } = useGetUserQuery(null, {
-    skip: !isAuthenticated,
-    refetchOnReconnect: true,
-  })
+  const [
+    getUser,
+    {
+      isError: isUserError,
+      isSuccess: isUseruccess,
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const requiredFields = ['email', 'password']
-    const errors: FormErrors = {}
+      data: userData,
+      error: userError,
+    },
+  ] = useGetUserMutation()
 
-    requiredFields.forEach((field) => {
-      if (!formData[field as keyof IFormAuthData]) {
-        errors[field] = 'Это поле обязательно для заполнения'
-      }
-    })
-
-    if (Object.keys(errors).length === 0) {
-      await loginUser({ email, password })
-      setIsAuthenticated(true)
-    } else {
-      setFormError(errors)
-    }
+  const handleLogin = (data: IFormAuthData) => {
+    loginUser({ email: data.email, password: data.password })
   }
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleRegister = async (data: IFormAuthData) => {
     console.log('register')
-    const requiredFields = ['email', 'password', 'repeatPassword']
-    const errors: FormErrors = {}
-
-    requiredFields.forEach((field) => {
-      if (!formData[field as keyof IFormAuthData]) {
-        errors[field] = 'Это поле обязательно для заполнения'
-      }
-    })
-    if (formData.password !== formData.repeatPassword) {
-      errors['repeatPassword'] = 'Пароли не совпадают'
-    }
-    if (Object.keys(errors).length === 0) {
-      await registerUser(formData)
-      await loginUser(formData)
-    } else {
-      setFormError(errors)
-    }
+    await registerUser(data)
   }
 
-  useEffect(() => {
-    if (isLoginError) {
-      console.log('login error', loginError)
-    }
-    if (isLoginSuccess) {
-      dispatch(setTokens(loginData))
-      setIsAuthenticated(true)
-    }
-    if (isRegisterSuccess) {
-      dispatch(setUser(registerData))
-      // setIsAuthenticated(true)
-    }
-  }, [isLoginSuccess, isRegisterSuccess])
+  // useEffect(() => {
+  //   if (isLoginError) {
+  //     console.log('login error', loginError)
+  //   }
+  //   if (isLoginSuccess) {
+  //     dispatch(setTokens(loginData))
+  //     setIsAuthenticated(true)
+  //     if (userData) {
+  //       console.log('user data', userData)
+  //       dispatch(setUser(userData))
+  //     }
+
+  //     navigate(`/`)
+  //   }
+  //   // if (isRegisterSuccess) {
+  //   //   dispatch(setUser(registerData))
+  //   //   // setIsAuthenticated(true)
+  //   // }
+  // }, [isLoginSuccess, isRegisterSuccess, userData])
 
   useEffect(() => {
-    if (userData) {
-      dispatch(setUser(userData))
-      navigate(`/user/${userData.id}`)
+    if (registerData) {
+      setIsAuthenticated(true)
+      dispatch(setUser(registerData))
+      console.log('user ID', registerData)
+      formData &&
+        loginUser({ email: formData?.email, password: formData?.password })
+      navigate(`/user/${registerData.id}`)
     }
-  }, [isAuthenticated, userData])
+  }, [registerData])
+
+  // useEffect(() => {
+  //   if (isRegisterSuccess) {
+  //     console.log('user reg', registerData)
+  //     dispatch(setUser(registerData))
+  //   }
+  // }, [isRegisterSuccess])
+
+  useEffect(() => {
+    if (isLoginSuccess) {
+      setIsAuthenticated(true)
+
+      tokens.access_token && getUser(null)
+    }
+  }, [isLoginSuccess, tokens])
+
+  useEffect(() => {
+    if (userData && loginData) {
+      console.log('new user', userData)
+      dispatch(setUser(userData))
+
+      navigate(`/user/${userData?.id}`)
+    }
+  }, [userData, isLoginSuccess, loginData])
+
+  useEffect(() => {
+    if (loginError) {
+      console.log('user error1', loginError)
+      const errorResponse = loginError as IErrorResponse
+      console.log('user error2', errorResponse.data.detail)
+      if (errorResponse.data.detail === 'Incorrect password') {
+        setErrorMessage('Не верный пароль')
+      } else {
+        setErrorMessage('Такой email не зарегистрирован')
+      }
+    }
+  }, [isLoginError])
+  useEffect(() => {
+    setErrorMessage('')
+  }, [password, email])
 
   return (
     <>
       {isMobile && <Search />}
       <div className={S.wrapper}>
-        <form onSubmit={isSignUp ? handleRegister : handleLogin}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className={S.logo_wrapper}>
             <img src={logoUrl} alt="logo" />
           </div>
           <input
             type="email"
             placeholder="email"
-            name="email"
-            onChange={handleChange}
+            {...register('email', {
+              required: 'Введите email',
+              // pattern: {
+              //   value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              //   message: 'Некорректный email',
+              // },
+            })}
           />
-          {formError.email && <FormError text={`${formError.email}`} />}
+          {errors.email && <FormError text={errors.email.message}></FormError>}
+
           <input
             type="password"
             placeholder="Пароль"
-            name="password"
-            onChange={handleChange}
+            {...register('password', {
+              required: 'Введите пароль',
+              minLength: {
+                value: 6,
+                message: 'Минимум 6 символов',
+              },
+              maxLength: {
+                value: 10,
+                message: 'Максимально 10 символов',
+              },
+              // pattern: {
+              //   value:
+              //     /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/,
+              //   message:
+              //     'Должны быть минимум одна заглавная буква, цифра и спецсимвол (!@#$%^&*)',
+              // },
+            })}
           />
-          {formError.password && (
-            <FormError text={formError.password}></FormError>
+          {errors.password && (
+            <FormError text={errors.password.message}></FormError>
           )}
+
           {isSignUp && (
             <>
               <input
                 type="password"
                 placeholder="Повторите пароль"
-                name="repeatPassword"
-                onChange={handleChange}
+                {...register('repeatPassword', {
+                  required: 'Повторите пароль',
+                  validate: (value) =>
+                    value === password || 'Пароли не совпадают',
+                })}
               />
-              {formError.repeatPassword && (
-                <FormError text={formError.repeatPassword}></FormError>
+              {errors.repeatPassword && (
+                <FormError text={errors.repeatPassword.message}></FormError>
               )}
+
               <input
                 type="text"
                 placeholder="Имя (необязательно)"
-                name="name"
-                onChange={handleChange}
+                {...register('name')}
               />
+              {errors.name && (
+                <FormError text={errors.name.message}></FormError>
+              )}
               <input
                 type="text"
                 placeholder="Фамилия (необязательно)"
-                name="surname"
-                onChange={handleChange}
+                {...register('surname')}
               />
+              {errors.surname && (
+                <FormError text={errors.surname.message}></FormError>
+              )}
               <input
                 type="text"
                 placeholder="Город (необязательно)"
-                name="city"
-                onChange={handleChange}
+                {...register('city')}
               />
+              {errors.city && (
+                <FormError text={errors.city.message}></FormError>
+              )}
             </>
           )}
           <div className={S.form_btn_wrapper}>
@@ -215,6 +270,7 @@ const Auth = () => {
               )}
             </Link>
           </div>
+          {errorMessage && <FormError text={errorMessage}></FormError>}
         </form>
       </div>
       <Footer />

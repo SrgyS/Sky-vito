@@ -42,6 +42,9 @@ export interface IFormAuthData extends IBaseFormData {
   password: string
   repeatPassword?: string
 }
+export interface IFormProfileData extends IBaseFormData {
+  avatar: FileList | null
+}
 export interface IRegistrationError {
   status: number | string
   data:
@@ -57,4 +60,11 @@ export interface IReview {
   created_on: string
   id: number
   text: string
+}
+
+export interface IErrorResponse {
+  status: number
+  data: {
+    detail: string
+  }
 }

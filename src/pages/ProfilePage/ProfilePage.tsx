@@ -11,13 +11,13 @@ import { useAppSelector } from 'hooks/reduxHooks'
 import { useEffect } from 'react'
 import Footer from 'components/Footer/Footer'
 import Search from 'components/Search/Search'
+import { useParams } from 'react-router-dom'
+import { useAuth } from 'hooks/useAuth'
 
 const ProfilePage = () => {
-  const userData = useAppSelector((state) => state.user)
-
-  const { data, isLoading, error, isSuccess } = useGetSellerAdvsQuery(
-    userData.id,
-  )
+  const userData = useAuth()
+  const { id } = useParams()
+  const { data, isLoading, error, isSuccess } = useGetSellerAdvsQuery(id)
   if (isLoading) {
     return <p>Загрузка...</p>
   }

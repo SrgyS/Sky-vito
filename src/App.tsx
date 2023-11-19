@@ -1,11 +1,13 @@
 import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
 import { useEffect, useState } from 'react'
 import AppRoutes from 'routing/AppRoutes'
-import { useGetUserQuery, useRefreshTokenMutation } from 'store/services/advApi'
+import {
+  useGetUserMutation,
+  useRefreshTokenMutation,
+} from 'store/services/advApi'
 import { setTokens } from 'store/slices/authSlice'
 import { setIsMobile } from 'store/slices/uiSlice'
 import { setUser } from 'store/slices/userSlice'
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -24,18 +26,29 @@ function App() {
       console.log('Parsed tokens: ', parsedTokens)
       dispatch(setTokens(parsedTokens))
       setIsAuth(true)
+      getUser(null)
     }
   }, [dispatch])
 
-  const {
-    data: userData,
-    error: userError,
-    isLoading: isUserLoading,
-    status: queryStatus,
-  } = useGetUserQuery(null, {
-    skip: !isAuth,
-    refetchOnReconnect: true,
-  })
+  // const {
+  //   data: userData,
+  //   error: userError,
+  //   isLoading: isUserLoading,
+  //   status: queryStatus,
+  // } = useGetUserQuery(null, {
+  //   skip: !isAuth,
+  //   refetchOnReconnect: true,
+  // })
+  const [
+    getUser,
+    {
+      isError: isUserError,
+      isSuccess: isUseruccess,
+
+      data: userData,
+      error: userError,
+    },
+  ] = useGetUserMutation()
 
   const handleUserError = async () => {
     if (userError && 'status' in userError) {
@@ -53,7 +66,7 @@ function App() {
             refresh_token,
           })
           console.log('refresh1', refreshResult)
-          useGetUserQuery(null)
+          getUser(null)
         } catch (error) {
           console.error('Ошибка обновления токена:', error)
         }
@@ -64,7 +77,8 @@ function App() {
   useEffect(() => {
     console.log('123')
     handleUserError()
-    dispatch(setUser(userData))
+
+    userData && dispatch(setUser(userData))
   }, [userError, userData, dispatch])
 
   useEffect(() => {

@@ -6,9 +6,9 @@ import {
 } from '@reduxjs/toolkit/query/react'
 import { useNavigate } from 'react-router-dom'
 import { setTokens } from 'store/slices/authSlice'
-import { logout, setUser } from 'store/slices/userSlice'
+import { IUserState, logout, setUser } from 'store/slices/userSlice'
 import { RootState } from 'store/store'
-import { IAddNewAdv } from 'types'
+import { IAddNewAdv, IUser } from 'types'
 
 // const baseQueryWithReauth: BaseQueryFn<
 //   string,
@@ -111,13 +111,18 @@ export const advApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: 'http://localhost:8090',
     prepareHeaders: (headers, { getState }) => {
-      const storedTokens = localStorage.getItem('tokens')
-      const token = storedTokens ? JSON.parse(storedTokens).access_token : null
-
+      const token = (getState() as RootState).auth.access_token
       if (token) {
         headers.set('Authorization', `Bearer ${token}`)
       }
       return headers
+      // const storedTokens = localStorage.getItem('tokens')
+      // const token = storedTokens ? JSON.parse(storedTokens).access_token : null
+
+      // if (token) {
+      //   headers.set('Authorization', `Bearer ${token}`)
+      // }
+      // return headers
     },
   }),
   tagTypes: ['Adv', 'User', 'Auth'],
@@ -170,20 +175,24 @@ export const advApi = createApi({
       },
     }),
 
-    getUser: build.query({
+    getUser: build.mutation({
       query: () => '/user',
+      transformResponse: (response: IUserState) => {
+        localStorage.setItem('user', JSON.stringify(response))
 
-      onQueryStarted: async (arg, { queryFulfilled }) => {
-        const { data } = await queryFulfilled
-
-        if (data) {
-          localStorage.setItem('user', JSON.stringify(data))
-          console.log('записал')
-        } else {
-          console.error('Ошибка получения данных пользователя')
-        }
+        return response
       },
-      providesTags: ['User'],
+      // onQueryStarted: async (arg, { queryFulfilled }) => {
+      //   const { data } = await queryFulfilled
+
+      //   if (data) {
+      //     localStorage.setItem('user', JSON.stringify(data))
+      //     console.log('записал')
+      //   } else {
+      //     console.error('Ошибка получения данных пользователя')
+      //   }
+      // },
+      invalidatesTags: ['User'],
     }),
 
     updateUser: build.mutation({
@@ -296,7 +305,7 @@ export const advApi = createApi({
         url: `ads/${data.id}/image?file_url=${data.imgUrl}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Adv'],
+      invalidatesTags: ['Adv', 'User'],
     }),
     uploadImg: build.mutation({
       query: (uploadImgData) => {
@@ -335,7 +344,7 @@ export const {
   useGetSellerAdvsQuery,
   useGetAdvCommentsQuery,
   useAddAdvMutation,
-  useGetUserQuery,
+  useGetUserMutation,
   useLoginUserMutation,
   useRefreshTokenMutation,
   useRegisterUserMutation,

@@ -8,6 +8,7 @@ import { logout } from 'store/slices/userSlice'
 import { useAppDispatch } from 'hooks/reduxHooks'
 import AddNewAdv from 'components/modals/AddNewAdv'
 import { setOpenModal } from 'store/slices/advsSlice'
+import { resetTokens, setTokens } from 'store/slices/authSlice'
 
 const Header = () => {
   const location = useLocation()
@@ -20,6 +21,7 @@ const Header = () => {
   }
   const handleLogout = () => {
     dispatch(logout())
+    dispatch(resetTokens())
     navigate('/')
   }
   return (

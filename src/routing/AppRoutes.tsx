@@ -16,6 +16,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
+      {/* <Route path="/" element={<MainPage />} /> */}
       <Route path="/ads/:id" element={<AdvPage />} />
       <Route path="/seller/:id" element={<SellerProfilePage />} />
       <Route path="/signin" element={<Auth />} />
