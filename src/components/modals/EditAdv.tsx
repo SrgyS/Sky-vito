@@ -13,6 +13,9 @@ import Button from 'common/buttons/Button'
 import { nanoid } from 'nanoid'
 import { baseUrl } from 'utils/utils'
 import ModalPortal from './ModalPortal'
+import deleteBtnUrl from 'assets/img/delete.png'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
+import FormError from 'components/Error/FormError'
 
 type Props = {
   isOpen: boolean
@@ -21,11 +24,19 @@ type Props = {
 }
 
 const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
-  type FormChangeHandler =
-    | React.ChangeEvent<HTMLInputElement>
-    | React.ChangeEvent<HTMLTextAreaElement>
+  // type FormChangeHandler =
+  //   | React.ChangeEvent<HTMLInputElement>
+  //   | React.ChangeEvent<HTMLTextAreaElement>
 
-  const initialFormData: IAddNewAdv = {
+  // const [formData, setFormData] = useState<IAddNewAdv>(() => {
+  //   if (editingAdvData) {
+  //     return editingAdvData
+  //   }
+  //   return initialFormData
+  // })
+  console.log('editingAdvData', editingAdvData)
+
+  const initialFormData: IAddNewAdv = editingAdvData || {
     title: '',
     description: '',
     price: '',
@@ -34,26 +45,20 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
   }
 
   const { access_token, refresh_token } = useAppSelector((state) => state.auth)
-
-  const [imgFile, setImgFile] = useState<File | null>(null)
-  const [isFormChanged, setIsFormChanged] = useState(false)
+  // const [sendFile, setSendFile] = useState<File | null>(null)
+  const [imgFile, setImgFile] = useState('')
+  // const [isFormChanged, setIsFormChanged] = useState(false)
 
   const [
     refreshToken,
     { isError: isRefreshTokenError, isSuccess: isRefreshTokenSuccess },
   ] = useRefreshTokenMutation()
 
-  const [formData, setFormData] = useState<IAddNewAdv>(() => {
-    if (editingAdvData) {
-      return editingAdvData
-    }
-    return initialFormData
-  })
   const resetState = () => {
-    setFormData(initialFormData)
+    // setFormData(initialFormData)
     setFormError({})
-    setImgFile(null)
-    setIsFormChanged(false)
+    // setImgFile(null)
+    // setIsFormChanged(false)
   }
 
   const [formError, setFormError] = useState({})
@@ -85,52 +90,47 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
     },
   ] = useEditAdvMutation()
 
-  const handleChange = (e: FormChangeHandler) => {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
-    setFormError({})
-    setIsFormChanged(true)
-  }
+  // const handleChange = (e: FormChangeHandler) => {
+  //   const { name, value } = e.target
+  //   setFormData({ ...formData, [name]: value })
+  //   setFormError({})
+  //   setIsFormChanged(true)
+  // }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0]
-    if (file && file.type.startsWith('image/')) {
-      setImgFile(file || null)
-      setIsFormChanged(true)
-    } else {
-      console.error('Выбранный файл не является изображением')
-    }
-  }
-  const handleEditAdv = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (formData) {
-      if (!access_token || !refresh_token) {
-        console.error('Токены не заданы')
-        return
-      }
-      await refreshToken({ access_token, refresh_token })
-      if (!formData.title) {
-        setFormError('Это поле обязательно для заполнения')
-        console.log('заполни поле')
-        return
-      }
-    }
-    const editData = {
-      title: formData.title,
-      description: formData.description,
-      price: formData.price,
-      id: editingAdvData?.id,
-    }
-    console.log('editAdv', editData)
-    await editAdv(editData)
+  // const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files && e.target.files[0]
+  //   if (file && file.type.startsWith('image/')) {
+  //     // setImgFile(file || null)
+  //     setIsFormChanged(true)
+  //   } else {
+  //     console.error('Выбранный файл не является изображением')
+  //   }
+  // }
+  // const handleEditAdv = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault()
+  //   if (formData) {
+  //     if (!access_token || !refresh_token) {
+  //       console.error('Токены не заданы')
+  //       return
+  //     }
+  //     await refreshToken({ access_token, refresh_token })
+  //   }
+  //   const editData = {
+  //     title: formData.title,
+  //     description: formData.description,
+  //     price: formData.price,
+  //     id: editingAdvData?.id,
+  //   }
+  //   console.log('editAdv', editData)
+  //   await editAdv(editData)
 
-    if (imgFile && editingAdvData && editingAdvData.id) {
-      const uploadImgData = { imgFile, id: editingAdvData.id }
-      console.log('uploadImg', uploadImgData)
-      await uploadImg(uploadImgData)
-      setImgFile(null)
-    }
-  }
+  //   if (imgFile && editingAdvData && editingAdvData.id) {
+  //     const uploadImgData = { imgFile, id: editingAdvData.id }
+  //     console.log('uploadImg', uploadImgData)
+  //     await uploadImg(uploadImgData)
+  //     // setImgFile(null)
+  //   }
+  // }
 
   const handleImgDelete = async (id: number, imgUrl: string) => {
     if (!access_token || !refresh_token) {
@@ -148,36 +148,74 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
   }, [isSuccess])
 
   useEffect(() => {
-    setFormData((prevFormData) => ({ ...prevFormData, imgFile }))
-    console.log('handleFileChange edit', imgFile)
-    console.log('formData + img', formData)
-  }, [imgFile])
-
-  useEffect(() => {
-    console.log('editingAdvData', editingAdvData)
-    console.log('картинки', formData.images)
-
-    if (editingAdvData) {
-      setFormData((prev) => ({ ...prev, ...editingAdvData }))
-      console.log('formData ed', formData)
-      console.log('img')
-    }
-  }, [editingAdvData, isOpen])
-
-  useEffect(() => {
     if (!isOpen) {
       resetState()
+      reset()
+      setImgFile('')
     }
   }, [isOpen])
 
+  //-------------use Form--------------------------------------------------------
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitSuccessful },
+    watch,
+    control,
+    reset,
+  } = useForm<IAddNewAdv>({
+    defaultValues: initialFormData,
+    mode: 'onTouched',
+  })
+
+  const previewImg = watch('imgFiles')
+
+  const onSubmit: SubmitHandler<IAddNewAdv> = async (data) => {
+    if (data) {
+      console.log('all data', data)
+      if (!access_token || !refresh_token) {
+        console.error('Токены не заданы')
+        return
+      }
+      await refreshToken({ access_token, refresh_token })
+    }
+    const editData = {
+      title: data.title,
+      description: data.description,
+      price: data.price,
+      id: editingAdvData?.id,
+    }
+    console.log('editAdv', editData)
+    await editAdv(editData)
+
+    if (data && data.imgFiles && editingAdvData && editingAdvData.id) {
+      const uploadImgFile = data.imgFiles[0]
+      await uploadImg({ uploadImgFile, id: editingAdvData.id })
+    }
+  }
+
   useEffect(() => {
-    if (isEditAddAdvSuccess) {
-      setIsFormChanged(false)
+    if (previewImg) {
+      const file = previewImg[0]
+      file && setImgFile(URL.createObjectURL(file))
     }
-    if (isUploadImgSuccess) {
-      setIsFormChanged(false)
+    console.log('previewImg', previewImg)
+  }, [previewImg])
+
+  useEffect(() => {
+    if (editingAdvData) {
+      reset(editingAdvData)
+    } else {
+      reset(initialFormData)
     }
-  }, [isEditAddAdvSuccess, isUploadImgSuccess])
+  }, [editingAdvData, reset])
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset()
+      setImgFile('')
+    }
+  }, [isSubmitSuccessful, reset])
 
   return isOpen ? (
     <ModalPortal>
@@ -187,37 +225,53 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
           <div className={S.close_btn} onClick={() => onClose()}>
             <div className={S.close_btn_line}></div>
           </div>
-          <form className={S.form} action="#" onSubmit={handleEditAdv}>
+          <form className={S.form} action="#" onSubmit={handleSubmit(onSubmit)}>
             <div className={S.form_block}>
               <label htmlFor="title">Название</label>
               <input
-                value={formData.title}
                 className={S.form_input}
                 type="text"
-                name="title"
+                {...register('title', {
+                  required: 'Введите название',
+                  minLength: {
+                    value: 3,
+                    message: 'Минимум 3 символа',
+                  },
+                  maxLength: {
+                    value: 40,
+                    message: 'Максимально 40 символов',
+                  },
+                })}
                 placeholder="Введите название"
-                onChange={handleChange}
               />
+              {errors.title && (
+                <FormError text={errors.title.message}></FormError>
+              )}
             </div>
+
             <div className={S.form_block}>
               <label htmlFor="description">Описание</label>
-              <textarea
-                className={S.form_textarea}
+              <Controller
                 name="description"
-                cols={10}
-                rows={10}
-                placeholder="Введите описание"
-                onChange={handleChange}
-                value={formData.description}
-              ></textarea>
+                control={control}
+                render={({ field }) => (
+                  <textarea
+                    {...field}
+                    className={S.form_textarea}
+                    cols={10}
+                    rows={10}
+                    placeholder="Введите описание"
+                  ></textarea>
+                )}
+              />
             </div>
             <div className={S.form_block}>
               <p className={S.form_p}>
                 Фотографии товара<span>не более 5 фотографий</span>
               </p>
               <div className={S.form_img_bar}>
-                {formData.images &&
-                  formData.images.map((image, index) => {
+                {initialFormData.images &&
+                  initialFormData.images.map((image) => {
                     const uniqueId = nanoid()
                     return (
                       <label
@@ -228,31 +282,30 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
                         {image && image.url && (
                           <>
                             <img src={`${baseUrl}/${image.url}`} alt="" />
-                            <Button
-                              text="удалить"
-                              className="delete_btn"
+                            <div
+                              className={S.delete_btn}
                               onClick={() =>
                                 editingAdvData?.id !== undefined &&
                                 handleImgDelete(editingAdvData?.id, image.url)
                               }
-                            />
+                            >
+                              <img src={deleteBtnUrl} alt="delete icon" />
+                            </div>
                           </>
                         )}
                       </label>
                     )
                   })}
-                {formData.images && formData.images.length < 5 ? (
+                {initialFormData.images && initialFormData.images.length < 5 ? (
                   <label htmlFor="fileInput" className={S.form_img}>
-                    {imgFile && (
-                      <img src={URL.createObjectURL(imgFile)} alt="" />
-                    )}
+                    {imgFile && <img src={imgFile} alt="" />}
 
                     <div className={S.form_img_cover}></div>
                     <input
                       className={S.hidden}
                       type="file"
+                      {...register('imgFiles')}
                       id="fileInput"
-                      onChange={handleFileChange}
                     />
                   </label>
                 ) : (
@@ -262,19 +315,29 @@ const EditAdv = ({ isOpen, onClose, editingAdvData }: Props) => {
             </div>
             <div className={`${S.form_block} ${S.block_price}`}>
               <label htmlFor="price">Цена</label>
-              <input
-                className={S.form_input_price}
-                type="text"
-                name="price"
-                id="formEditPrice"
-                onChange={handleChange}
-                value={formData.price}
-              />
-              <div className={S.input_price_cover}></div>
+              <div className={S.input_price_box}>
+                <input
+                  className={S.form_input_price}
+                  type="text"
+                  id="formEditPrice"
+                  {...register('price', {
+                    pattern: {
+                      value: /^[1-9]\d{0,9}$/,
+                      message: 'Недопустимое значение',
+                    },
+                  })}
+                />
+                <div className={S.input_price_cover}></div>
+              </div>
+
+              {errors.price && (
+                <FormError text={errors.price.message}></FormError>
+              )}
             </div>
+
             <Button
               className="color_btn"
-              disabled={!isFormChanged}
+              // disabled={!isFormChanged}
               text="Сохранить"
             />
           </form>

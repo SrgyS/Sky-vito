@@ -7,6 +7,11 @@ export const formatUserDate = (date: string) => {
 
   return format(parseDate, 'MMMM yyyy', { locale: ruLocale })
 }
+export const formatReviewDate = (date: string) => {
+  const parseDate = parseISO(date)
+
+  return format(parseDate, 'q MMMM', { locale: ruLocale })
+}
 
 export const formatAdvDate = (dateTimeString: string) => {
   const inputDate = parseISO(dateTimeString)
@@ -14,7 +19,6 @@ export const formatAdvDate = (dateTimeString: string) => {
     addSuffix: true,
     locale: ruLocale,
   })
-
   return timeDistance
 }
 export const formatPrice = (price: number | string) => {

@@ -1,5 +1,5 @@
 import HeaderWrapper from './HeaderWrapper'
-import HeaderFirstRow from './HeaderFirstRow'
+import HeaderFirstRow from './HeaderContainer'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import Button from 'common/buttons/Button'
@@ -9,13 +9,19 @@ import { useAppDispatch } from 'hooks/reduxHooks'
 import AddNewAdv from 'components/modals/AddNewAdv'
 import { setOpenModal } from 'store/slices/advsSlice'
 import { resetTokens, setTokens } from 'store/slices/authSlice'
+import HeaderContainer from './HeaderContainer'
+import { useEffect, useLayoutEffect, useState } from 'react'
 
 const Header = () => {
   const location = useLocation()
   const { isAuth, id } = useAuth()
+
+  console.log('isAuth', isAuth)
   const isProfilePage = location.pathname === `/user/${id}`
+
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+
   const handleOpenModal = () => {
     dispatch(setOpenModal())
   }
@@ -24,10 +30,11 @@ const Header = () => {
     dispatch(resetTokens())
     navigate('/')
   }
+
   return (
     <>
       <HeaderWrapper>
-        <HeaderFirstRow>
+        <HeaderContainer>
           {isAuth ? (
             <div>
               <Button
@@ -52,7 +59,7 @@ const Header = () => {
               <Button text="Вход в личный кабинет" className="header_btn" />
             </Link>
           )}
-        </HeaderFirstRow>
+        </HeaderContainer>
       </HeaderWrapper>
       <AddNewAdv />
     </>

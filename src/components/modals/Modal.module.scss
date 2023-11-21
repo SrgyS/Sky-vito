@@ -15,16 +15,14 @@
   max-height: 100vh;
   opacity: 1;
 }
-// ========== hover ========
-
-.modal_title {
-  &:hover::before {
-    border-top: 2px solid #0080c1;
-    border-left: 2px solid #0080c1;
-  }
-}
 
 .modal {
+  &_title {
+    &:hover::before {
+      border-top: 2px solid #0080c1;
+      border-left: 2px solid #0080c1;
+    }
+  }
   &_block {
     z-index: 5;
     left: calc(50% - (600px / 2));
@@ -55,19 +53,21 @@
   }
 }
 
-.form {
-  margin-top: 22px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
 .form_block {
   width: 100%;
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
+  input:focus {
+    outline: none;
+    border: 2px solid #009ee4;
+  }
 }
 .form {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   & label {
     margin-bottom: 4px;
     font-size: 16px;
@@ -84,6 +84,10 @@
     border-radius: 6px;
     font-size: 16px;
     line-height: 1;
+  }
+  &_textarea:focus {
+    outline: none;
+    border: 2px solid #009ee4;
   }
 
   &_input {
@@ -340,7 +344,27 @@
   }
   &_right {
     display: block;
+    width: 100%;
+    position: relative;
   }
+  &_delete_btn {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    cursor: pointer;
+    transition: all 0.4s ease-in-out;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+
   &_name {
     margin-bottom: 12px;
     font-weight: 600;
@@ -366,7 +390,26 @@
     color: #000000;
   }
 }
-
+.delete_btn {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
+  transition: all 0.4s ease-in-out;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+.input_price_box {
+  position: relative;
+}
 // ==================== media ==================
 
 @media screen and (max-width: 600px) {

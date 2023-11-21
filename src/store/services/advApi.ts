@@ -308,11 +308,11 @@ export const advApi = createApi({
       invalidatesTags: ['Adv', 'User'],
     }),
     uploadImg: build.mutation({
-      query: (uploadImgData) => {
+      query: ({ uploadImgFile, id }) => {
         const formData = new FormData()
-        formData.append('file', uploadImgData.imgFile)
+        formData.append('file', uploadImgFile)
         return {
-          url: `ads/${uploadImgData.id}/image`,
+          url: `ads/${id}/image`,
           method: 'POST',
           body: formData,
         }

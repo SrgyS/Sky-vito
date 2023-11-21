@@ -17,10 +17,16 @@ Sergei Stepanov
 
 To get started with the project, follow these steps:
 
-1. Clone the repository to your computer
-2. Install necessary dependencies using npm install command
-3. Start the server using npm start command
-4. Open your browser and go to http://localhost:3000
+1. Download the backend file using the [link] (https://drive.google.com/file/d/1pFE-NRANTsWmQwTyURjHXuECMmoKCFjO/view) and deploy it in Docker.
+
+- Download the archive and extract its contents.
+- Navigate to the extracted folder via the terminal.
+- Run the following command in the terminal: docker-compose -f docker-compose-backend.yaml up -d
+
+2. Install dependencies using the command: npm install
+3. Start the project with the command: npm run start
+4. You can build the project with the command: npm run build
+   src/ — directory containing the project's source code.
 
 ## Tech stack
 

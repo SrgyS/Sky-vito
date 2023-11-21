@@ -8,33 +8,54 @@ import Profile from 'components/Profile/Profile'
 import { useGetSellerAdvsQuery } from 'store/services/advApi'
 import { IAdv } from 'types'
 import { useAppSelector } from 'hooks/reduxHooks'
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import Footer from 'components/Footer/Footer'
 import Search from 'components/Search/Search'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from 'hooks/useAuth'
+import CardSkeleton from 'components/CardSkeleton/CardSkeleton'
+import { useMobileStatus } from 'hooks/useMobileStatus'
 
 const ProfilePage = () => {
   const userData = useAuth()
-  const { id } = useParams()
-  const { data, isLoading, error, isSuccess } = useGetSellerAdvsQuery(id)
-  if (isLoading) {
-    return <p>Загрузка...</p>
-  }
+  // const { id } = useParams()
+  // const navigate = useNavigate()
+  const { isMobile } = useMobileStatus()
+  const userFromStorage = localStorage.getItem('user')
+  const userId = userFromStorage && JSON.parse(userFromStorage).id
+  // if (id !== userId.toString()) {
+  //   navigate('/')
+  // }
+  const { data, isLoading, error, isSuccess } = useGetSellerAdvsQuery(
+    userData.id,
+  )
+  // if (isLoading) {
+  //   return <p>Загрузка ---...</p>
+  // }
 
-  console.log('error', error)
+  // useEffect(() => {
+  //   if (id !== userId.toString()) {
+  //     navigate('/')
+  //   }
+  // }, [id])
+
   return (
     <>
       <Header />
       <TopSection>
         <Search />
+        {isLoading &&
+          [...Array(1)].map((_, index) => (
+            <CardSkeleton key={index} isMobile={isMobile} />
+          ))}
         {userData.id ? (
           <>
             <Profile user={userData} />
             <Subtitle className="advs_title">Мои товары</Subtitle>
             <AdvContainer>
               {!isLoading && error && <p>Что-то пошло не так...</p>}
-              {data.length > 0
+
+              {data && data.length > 0
                 ? data.map((card: IAdv) => (
                     <MiniAdvCard cardData={card} key={card.id} />
                   ))
@@ -42,7 +63,7 @@ const ProfilePage = () => {
             </AdvContainer>
           </>
         ) : (
-          <p>Пользователь не найден</p>
+          ''
         )}
       </TopSection>
       <Footer />

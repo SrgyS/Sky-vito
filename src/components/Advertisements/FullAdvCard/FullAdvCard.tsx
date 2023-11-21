@@ -27,7 +27,6 @@ import { useAuth } from 'hooks/useAuth'
 import EditAdv from 'components/modals/EditAdv'
 import Reviews from 'components/modals/Reviews'
 import { useMobileStatus } from 'hooks/useMobileStatus'
-import Slider from 'components/Slider/Slider'
 
 type Props = {
   cardInfo: IAdv
@@ -108,9 +107,12 @@ const FullAdvCard = ({ cardInfo }: Props) => {
       navigate(`/user/${id}`)
     }
   }, [isDeleteAdvSucccess])
+
   useEffect(() => {
-    if (isCommentsSuccess) console.log('Comments', commentsData)
-  }, [isCommentsSuccess])
+    if (cardInfo.images && cardInfo.images.length > 0) {
+      setSelectedImg(cardInfo.images[0].url)
+    }
+  }, [cardInfo.images])
 
   return (
     <AdvWrapper>
@@ -144,7 +146,10 @@ const FullAdvCard = ({ cardInfo }: Props) => {
             : `${reviewCount}
       ${declineWord(reviewCount)}`}
         </p>
-        <p className={S.info_price}>{formatedPrice} ₽</p>
+        <p className={S.info_price}>
+          {Number(formatedPrice) === 0 ? 'Цена не указана' : `${formatedPrice}`}{' '}
+          ₽
+        </p>
         {isUserAdvPage && cardInfo.id ? (
           <div className={S.btn_box}>
             <Button

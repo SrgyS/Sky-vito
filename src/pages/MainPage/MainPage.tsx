@@ -1,5 +1,5 @@
 import { IAdv } from 'types'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import TopSection from 'common/section/TopSection'
 import Title from 'components/Advertisements/Title'
 import AdvContainer from 'components/Advertisements/AdvContainer'
@@ -12,10 +12,13 @@ import Header from 'components/Header/Header'
 import Footer from 'components/Footer/Footer'
 import Search from 'components/Search/Search'
 
+import CardSkeleton from 'components/CardSkeleton/CardSkeleton'
+import { useMobileStatus } from 'hooks/useMobileStatus'
+
 const MainPage = () => {
   const { data, isLoading, error } = useGetAllAdvsQuery({})
   const [dataFiltering, setDataFiltering] = useState(true)
-
+  const { isMobile } = useMobileStatus()
   const [filteredData, setFilteredData] = useState<IAdv[]>([])
   const [displayedData, setDisplayedData] = useState<IAdv[]>([])
   const [searchText, setSearchText] = useState(
@@ -44,8 +47,6 @@ const MainPage = () => {
   }
 
   useEffect(() => {
-    console.log(data)
-    console.log('filteredData:', filteredData)
     const savedSearchText = localStorage.getItem('searchText')
     if (savedSearchText) setSearchText(savedSearchText)
   }, [])
@@ -57,7 +58,7 @@ const MainPage = () => {
     }
   }, [searchText, data])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setDisplayedData(searchText && filteredData ? filteredData : data)
   }, [data, filteredData])
 
@@ -69,8 +70,12 @@ const MainPage = () => {
         <Search handleSearch={handleSearch} searchText={searchText} />
         <Title className={'main_title'}>Объявления</Title>
         <AdvContainer>
-          {isLoading && <p>Загрузка...</p>}
           {!isLoading && error && <p>Что-то пошло не так...</p>}
+          {isLoading &&
+            [...Array(8)].map((_, index) => (
+              <CardSkeleton key={index} isMobile={isMobile} />
+            ))}
+
           {displayedData?.length > 0
             ? displayedData.map((card: IAdv) => (
                 <MiniAdvCard cardData={card} key={card.id} />

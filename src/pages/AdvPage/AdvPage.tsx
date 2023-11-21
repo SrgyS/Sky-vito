@@ -40,7 +40,7 @@ const AdvPage = () => {
       {isMobile && <Slider images={advData?.images} />}
       <TopSection>
         <Search />
-        {isAdvLoading && <p>Загрузка...</p>}
+        {isAdvLoading && <p>Загрузка идет...</p>}
         {advError && <p>Ошибка загрузки</p>}
         {advData && <FullAdvCard cardInfo={advData} />}
       </TopSection>

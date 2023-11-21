@@ -8,10 +8,12 @@ import {
 } from 'store/services/advApi'
 import { useAppSelector } from 'hooks/reduxHooks'
 import { useParams } from 'react-router-dom'
-import { baseUrl } from 'utils/utils'
+import { baseUrl, formatReviewDate } from 'utils/utils'
 import { useAuth } from 'hooks/useAuth'
 import ModalPortal from './ModalPortal'
-
+import FormError from 'components/Error/FormError'
+import deleteIconUrl from 'assets/img/delete.png'
+import { selectCurrentAdv } from 'store/selectors/selectors'
 type Props = {
   isOpen: boolean
   onClose: () => void
@@ -20,11 +22,13 @@ type Props = {
 
 const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
   const { access_token, refresh_token } = useAppSelector((state) => state.auth)
-  const { id } = useParams()
-  const { isAuth } = useAuth()
+  const currentAdv = useAppSelector(selectCurrentAdv)
+
+  const { isAuth, id } = useAuth()
   const initialFormData = {
     text: '',
   }
+  const [errorMessage, setErrorMessage] = useState('')
   const [
     uploadComment,
     { isSuccess: isUploadCommentSuccess, isError: isUploadCommentError },
@@ -46,8 +50,9 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
     const { name, value } = e.target
     setFormData((prevData) => ({ ...prevData, [name]: value }))
 
-    // setFormError({})
-    setIsFormChanged(true)
+    formData.text.trim().length < 3
+      ? setErrorMessage('Минимум 4 символа')
+      : (setIsFormChanged(true), setErrorMessage(''))
   }
   const handleUploadComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -58,24 +63,32 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
     }
     await refreshToken({ access_token, refresh_token })
 
-    const commentData = {
-      id,
-      formData,
+    if (currentAdv) {
+      const commentData = {
+        id: currentAdv.id,
+        formData,
+      }
+
+      await uploadComment(commentData)
     }
-    console.log('comment send', commentData)
-    await uploadComment(commentData)
-    console.log('upload comment', commentData)
-    onClose()
   }
+
   useEffect(() => {
     if (!isOpen) {
-      console.log('reset')
       resetState()
     }
-    console.log('after reset', formData)
   }, [isOpen])
+
   useEffect(() => {
-    console.log('review text', formData)
+    if (isUploadCommentSuccess) {
+      resetState()
+    }
+  }, [isUploadCommentSuccess])
+
+  useEffect(() => {
+    if (formData.text.trim() === '' && formData.text.trim().length < 4) {
+      setIsFormChanged(false)
+    }
   }, [formData])
 
   return isOpen ? (
@@ -103,11 +116,12 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
                 onChange={handleChange}
                 value={formData.text}
               ></textarea>
+              <FormError text={errorMessage} />
             </div>
             <Button
               text="Опубликовать"
               className="color_btn"
-              disabled={!isAuth}
+              disabled={!isAuth || !isFormChanged}
             />
           </form>
 
@@ -128,10 +142,18 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
                   <div className={S.review_right}>
                     <p className={S.review_name}>
                       {comment.author.name}
-                      <span>{comment.created_on}</span>
+                      <span>{formatReviewDate(comment.created_on)}</span>
                     </p>
                     <h5 className={S.review_title}>Комментарий</h5>
                     <p className={S.review_text}>{comment.text}</p>
+                    {comment.author.id === Number(id) && (
+                      <div
+                        className={S.review_delete_btn}
+                        onClick={() => alert('Функционал пока не реализован')}
+                      >
+                        <img src={deleteIconUrl} alt="delete icon" />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

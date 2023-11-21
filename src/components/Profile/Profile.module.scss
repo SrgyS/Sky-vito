@@ -7,7 +7,7 @@
     overflow: hidden;
     img {
       max-width: 100%;
-      height: auto;
+      height: 100%;
       object-fit: contain;
     }
   }
@@ -69,6 +69,15 @@
 .form__group {
   min-width: 300px;
   margin: 0 7px 10px;
+
+  &:focus-within label {
+    color: #009ee4;
+  }
+  input:focus {
+    border: 2px solid #009ee4;
+    outline: none;
+  }
+
   label {
     color: #c4c4c4;
     font-size: 16px;
@@ -107,6 +116,7 @@
       border-radius: 30px;
       height: 40px;
     }
+
     label {
       padding-left: 17px;
       font-size: 14px;

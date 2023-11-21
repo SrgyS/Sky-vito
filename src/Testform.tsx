@@ -11,7 +11,7 @@ export const testForm = () => {
     watch,
   } = useForm<IFormAuthData>({
     defaultValues: {},
-    mode: 'onTouched',
+    mode: 'onBlur',
   })
 
   const password = watch('password')

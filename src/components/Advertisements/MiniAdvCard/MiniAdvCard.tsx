@@ -39,7 +39,7 @@ const MiniAdvCard = ({ cardData }: Props) => {
         <div className={S.card__info}>
           <p className={S.card__title}>{cardData.title}</p>
           <p className={S.card__price}>
-            {cardData.price ? formatPrice(cardData.price) : ''} ₽
+            {cardData.price ? formatPrice(cardData.price) : 'Цена не указана'} ₽
           </p>
           <p className={S.card__date}>
             {cardData.user?.city}

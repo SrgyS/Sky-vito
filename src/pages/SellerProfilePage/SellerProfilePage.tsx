@@ -18,7 +18,7 @@ const ProfilePage = () => {
 
   const { data, isLoading, error } = useGetSellerAdvsQuery(id)
   if (isLoading) {
-    return <p>Загрузка...</p>
+    return <p>Загрузка 123...</p>
   }
 
   if (!data) {

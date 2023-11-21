@@ -24,7 +24,7 @@ const Auth = () => {
   const location = useLocation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const [formData, setFormData] = useState<IFormAuthData>()
+  // const [formData, setFormData] = useState<IFormAuthData>()
   const isSignUp = location.pathname === '/signup'
   const tokens = useAppSelector((state) => state.auth)
 
@@ -42,14 +42,14 @@ const Auth = () => {
   const password = watch('password')
   const email = watch('email')
 
-  const onSubmit: SubmitHandler<IFormAuthData> = (data) => {
+  const onSubmit: SubmitHandler<IFormAuthData> = async (data) => {
     if (!isSignUp) {
-      handleLogin(data)
+      await loginUser({ email: data.email, password: data.password })
     } else {
-      handleRegister(data)
+      await registerUser(data)
     }
 
-    setFormData(data)
+    // setFormData(data)
   }
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -59,7 +59,6 @@ const Auth = () => {
     {
       isError: isRegisterError,
       isSuccess: isRegisterSuccess,
-      status: registerStatus,
       data: registerData,
       error: registerError,
     },
@@ -87,52 +86,32 @@ const Auth = () => {
     },
   ] = useGetUserMutation()
 
-  const handleLogin = (data: IFormAuthData) => {
-    loginUser({ email: data.email, password: data.password })
-  }
-
-  const handleRegister = async (data: IFormAuthData) => {
-    console.log('register')
-    await registerUser(data)
-  }
-
-  // useEffect(() => {
-  //   if (isLoginError) {
-  //     console.log('login error', loginError)
-  //   }
-  //   if (isLoginSuccess) {
-  //     dispatch(setTokens(loginData))
-  //     setIsAuthenticated(true)
-  //     if (userData) {
-  //       console.log('user data', userData)
-  //       dispatch(setUser(userData))
-  //     }
-
-  //     navigate(`/`)
-  //   }
-  //   // if (isRegisterSuccess) {
-  //   //   dispatch(setUser(registerData))
-  //   //   // setIsAuthenticated(true)
-  //   // }
-  // }, [isLoginSuccess, isRegisterSuccess, userData])
-
   useEffect(() => {
     if (registerData) {
-      setIsAuthenticated(true)
+      // setIsAuthenticated(true)
       dispatch(setUser(registerData))
       console.log('user ID', registerData)
-      formData &&
-        loginUser({ email: formData?.email, password: formData?.password })
+      loginUser({ email, password })
       navigate(`/user/${registerData.id}`)
     }
   }, [registerData])
 
-  // useEffect(() => {
-  //   if (isRegisterSuccess) {
-  //     console.log('user reg', registerData)
-  //     dispatch(setUser(registerData))
-  //   }
-  // }, [isRegisterSuccess])
+  useEffect(() => {
+    if (isRegisterError) {
+      const errorRegisterResponse = registerError as IErrorResponse
+
+      if (
+        errorRegisterResponse.data.details &&
+        errorRegisterResponse.data.details.includes(
+          'UNIQUE constraint failed: user.email',
+        )
+      ) {
+        setErrorMessage('Этот email уже зарегистрирован')
+      } else {
+        setErrorMessage('Ошибка при регистрации')
+      }
+    }
+  }, [isRegisterError, registerError])
 
   useEffect(() => {
     if (isLoginSuccess) {
@@ -153,16 +132,26 @@ const Auth = () => {
 
   useEffect(() => {
     if (loginError) {
-      console.log('user error1', loginError)
-      const errorResponse = loginError as IErrorResponse
-      console.log('user error2', errorResponse.data.detail)
-      if (errorResponse.data.detail === 'Incorrect password') {
-        setErrorMessage('Не верный пароль')
-      } else {
-        setErrorMessage('Такой email не зарегистрирован')
+      const errorLoginResponse = loginError as IErrorResponse
+      let errorMsg: string | undefined
+
+      if (Array.isArray(errorLoginResponse.data.detail)) {
+        // errorMsg = errorLoginResponse.data.detail[0]?.msg
+        // errorMsg.includes('not a valid email')
+        //   ? setErrorMessage('Недопустимый email')
+        //   :
+        setErrorMessage('Ошибка авторизации1')
+      } else if (typeof errorLoginResponse.data.detail === 'string') {
+        errorMsg = errorLoginResponse.data.detail
+        errorMsg === 'Incorrect password'
+          ? setErrorMessage('Не верный пароль')
+          : errorMsg === 'Incorrect email'
+          ? setErrorMessage('Этот email не зарегистрирован')
+          : setErrorMessage('Ошибка авторизации')
       }
     }
   }, [isLoginError])
+
   useEffect(() => {
     setErrorMessage('')
   }, [password, email])

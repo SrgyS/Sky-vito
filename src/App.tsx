@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
+
 import AppRoutes from 'routing/AppRoutes'
 import {
   useGetUserMutation,
@@ -18,7 +19,7 @@ function App() {
     { isError: isRefreshTokenError, isSuccess: isRefreshTokenSuccess },
   ] = useRefreshTokenMutation()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const localStorageTokens = localStorage.getItem('tokens')
 
     if (localStorageTokens) {
@@ -30,15 +31,6 @@ function App() {
     }
   }, [dispatch])
 
-  // const {
-  //   data: userData,
-  //   error: userError,
-  //   isLoading: isUserLoading,
-  //   status: queryStatus,
-  // } = useGetUserQuery(null, {
-  //   skip: !isAuth,
-  //   refetchOnReconnect: true,
-  // })
   const [
     getUser,
     {
@@ -53,7 +45,6 @@ function App() {
   const handleUserError = async () => {
     if (userError && 'status' in userError) {
       const userErrorStatus = userError.status
-      console.log('user error', userErrorStatus)
 
       if (userErrorStatus === 401) {
         if (!access_token || !refresh_token) {
@@ -69,6 +60,7 @@ function App() {
           getUser(null)
         } catch (error) {
           console.error('Ошибка обновления токена:', error)
+          setIsAuth(false)
         }
       }
     }
