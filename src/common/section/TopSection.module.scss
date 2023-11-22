@@ -1,0 +1,15 @@
+.section {
+  margin-top: 136px;
+  padding-bottom: 30px;
+  padding-left: calc(50% - 579px);
+  padding-right: calc(50% - 579px);
+}
+
+@media screen and (max-width: 590px) {
+  .section {
+    margin-top: 0;
+    padding-left: 18px;
+    padding-right: 18px;
+    padding-bottom: 65px;
+  }
+}

@@ -1,0 +1,84 @@
+@import-normalize;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('/public/fonts/Roboto-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/public/fonts/Roboto-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/public/fonts/Roboto-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+body,
+html {
+  height: 100%;
+  width: 100%;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+}
+
+#root {
+  all: inherit;
+  overflow: auto;
+}
+
+button {
+  display: inline-block;
+  border-radius: 6px;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  box-sizing: border-box;
+  font-family: Roboto;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: wrap;
+  border: none;
+  background-color: transparent;
+
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+input {
+  height: 50px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fff;
+  padding: 13px 19px;
+  width: 100%;
+}
+.center {
+  padding-left: calc(50% - 579px);
+  padding-right: calc(50% - 579px);
+}
+a {
+  text-decoration: none;
+}
+a:visited {
+  color: none;
+}
+@media screen and (max-width: 590px) {
+  .center {
+    padding-left: calc(50% - 278px);
+    padding-right: calc(50% - 278px);
+  }
+}

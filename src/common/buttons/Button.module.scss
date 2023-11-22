@@ -1,0 +1,78 @@
+.color_btn {
+  padding: 13px 37px;
+  width: fit-content;
+  background-color: #009ee4;
+  &:hover {
+    background-color: #0080c1;
+  }
+  &:disabled {
+    background-color: #d9d9d9;
+  }
+}
+.header_btn {
+  padding: 8px 24px;
+  border: 1px solid #fff;
+  background-color: #009ee4;
+  margin-left: 10px;
+
+  &:hover {
+    background-color: rgb(65, 185, 236);
+  }
+}
+.signup_btn {
+  padding: 13px;
+  background: #fff;
+  color: #000;
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
+.delete_btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+@media screen and (max-width: 590px) {
+  .back_btn {
+    width: 23px;
+    height: 23px;
+    position: absolute;
+    top: 19px;
+    left: 27px;
+    border-top: 2px solid #ffff;
+    border-left: 2px solid #ffff;
+    transform: rotate(-45deg);
+    cursor: pointer;
+    transition: all 0.3s;
+    &:hover {
+      border-top: 2px solid #009ee4;
+      border-left: 2px solid #009ee4;
+    }
+  }
+  .back_btn_black {
+    position: absolute;
+    top: 8px;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    transform: rotate(-45deg);
+    cursor: pointer;
+    transition: all 0.3s;
+    &:hover {
+      border-top: 2px solid #009ee4;
+      border-left: 2px solid #009ee4;
+    }
+  }
+  .color_btn.header_btn {
+    display: none;
+  }
+
+  .color_btn {
+    width: 100%;
+  }
+}
