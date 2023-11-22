@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 
 export interface IUserState {
   name?: string | null
@@ -31,12 +31,6 @@ export const userSlice = createSlice({
     setUser: (state, action: PayloadAction<IUserState>) => {
       const userData = action.payload
       Object.assign(state, userData)
-
-      // if (userData) {
-      //   console.log('User data1', userData)
-      //   const { id, email } = userData
-      //   localStorage.setItem('user', JSON.stringify({ id, email }))
-      // }
     },
 
     logout: (state) => {

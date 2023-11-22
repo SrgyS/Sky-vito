@@ -1,35 +1,38 @@
-import S from './Auth.module.scss'
-import logoUrl from 'assets/img/logo_modal.png'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import Button from 'common/buttons/Button'
-import { useEffect, useState } from 'react'
 import { IErrorResponse, IFormAuthData } from 'types'
+import { IoMdEye, IoMdEyeOff } from 'react-icons/io'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
+import { useEffect, useState } from 'react'
 import {
   useLoginUserMutation,
   useRegisterUserMutation,
-  useGetUserMutation,
-} from 'store/services/advApi'
+} from 'store/services/authApi'
 
-import { setTokens } from 'store/slices/authSlice'
-import { setUser } from 'store/slices/userSlice'
-
-import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
+import Button from 'common/buttons/Button'
 import Footer from 'components/Footer/Footer'
-import Search from 'components/Search/Search'
-import { useMobileStatus } from 'hooks/useMobileStatus'
-import { SubmitHandler, useForm } from 'react-hook-form'
 import FormError from 'components/Error/FormError'
+import S from './Auth.module.scss'
+import Search from 'components/Search/Search'
+import logoUrl from 'assets/img/logo_modal.png'
+import { setUser } from 'store/slices/userSlice'
+import { useGetUserMutation } from 'store/services/advApi'
+import { useMobileStatus } from 'hooks/useMobileStatus'
 
 const Auth = () => {
   const location = useLocation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  // const [formData, setFormData] = useState<IFormAuthData>()
+
   const isSignUp = location.pathname === '/signup'
   const tokens = useAppSelector((state) => state.auth)
 
   const [errorMessage, setErrorMessage] = useState('')
+  const [passwordEye, setPasswordEye] = useState(false)
 
+  const togglePasswordEye = () => {
+    setPasswordEye(!passwordEye)
+  }
   const {
     register,
     handleSubmit,
@@ -48,8 +51,6 @@ const Auth = () => {
     } else {
       await registerUser(data)
     }
-
-    // setFormData(data)
   }
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -88,11 +89,10 @@ const Auth = () => {
 
   useEffect(() => {
     if (registerData) {
-      // setIsAuthenticated(true)
       dispatch(setUser(registerData))
-      console.log('user ID', registerData)
+
       loginUser({ email, password })
-      navigate(`/user/${registerData.id}`)
+      navigate(`/user/${registerData.id}`, { replace: true })
     }
   }, [registerData])
 
@@ -123,10 +123,11 @@ const Auth = () => {
 
   useEffect(() => {
     if (userData && loginData) {
-      console.log('new user', userData)
       dispatch(setUser(userData))
 
-      navigate(`/user/${userData?.id}`)
+      window.history.replaceState(null, '', window.location.pathname)
+
+      navigate(`/user/${userData?.id}`, { replace: true })
     }
   }, [userData, isLoginSuccess, loginData])
 
@@ -134,13 +135,9 @@ const Auth = () => {
     if (loginError) {
       const errorLoginResponse = loginError as IErrorResponse
       let errorMsg: string | undefined
-
+    
       if (Array.isArray(errorLoginResponse.data.detail)) {
-        // errorMsg = errorLoginResponse.data.detail[0]?.msg
-        // errorMsg.includes('not a valid email')
-        //   ? setErrorMessage('Недопустимый email')
-        //   :
-        setErrorMessage('Ошибка авторизации1')
+        setErrorMessage('Ошибка авторизации')
       } else if (typeof errorLoginResponse.data.detail === 'string') {
         errorMsg = errorLoginResponse.data.detail
         errorMsg === 'Incorrect password'
@@ -176,47 +173,65 @@ const Auth = () => {
             })}
           />
           {errors.email && <FormError text={errors.email.message}></FormError>}
+          <div className={S.password_wrapper}>
+            <input
+              type={passwordEye === false ? 'password' : 'text'}
+              placeholder="Пароль"
+              {...register('password', {
+                required: 'Введите пароль',
+                minLength: {
+                  value: 6,
+                  message: 'Минимум 6 символов',
+                },
+                maxLength: {
+                  value: 10,
+                  message: 'Максимально 10 символов',
+                },
+                // pattern: {
+                //   value:
+                //     /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/,
+                //   message:
+                //     'Должны быть минимум одна заглавная буква, цифра и спецсимвол (!@#$%^&*)',
+                // },
+              })}
+            />
+            <div className={S.eye_wrapper}>
+              {passwordEye === false ? (
+                <IoMdEyeOff onClick={togglePasswordEye} />
+              ) : (
+                <IoMdEye onClick={togglePasswordEye} />
+              )}
+            </div>
+          </div>
 
-          <input
-            type="password"
-            placeholder="Пароль"
-            {...register('password', {
-              required: 'Введите пароль',
-              minLength: {
-                value: 6,
-                message: 'Минимум 6 символов',
-              },
-              maxLength: {
-                value: 10,
-                message: 'Максимально 10 символов',
-              },
-              // pattern: {
-              //   value:
-              //     /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/,
-              //   message:
-              //     'Должны быть минимум одна заглавная буква, цифра и спецсимвол (!@#$%^&*)',
-              // },
-            })}
-          />
           {errors.password && (
             <FormError text={errors.password.message}></FormError>
           )}
 
           {isSignUp && (
             <>
-              <input
-                type="password"
-                placeholder="Повторите пароль"
-                {...register('repeatPassword', {
-                  required: 'Повторите пароль',
-                  validate: (value) =>
-                    value === password || 'Пароли не совпадают',
-                })}
-              />
+              {' '}
+              <div className={S.password_wrapper}>
+                <input
+                  type={passwordEye === false ? 'password' : 'text'}
+                  placeholder="Повторите пароль"
+                  {...register('repeatPassword', {
+                    required: 'Повторите пароль',
+                    validate: (value) =>
+                      value === password || 'Пароли не совпадают',
+                  })}
+                />
+                <div className={S.eye_wrapper}>
+                  {passwordEye === false ? (
+                    <IoMdEyeOff onClick={togglePasswordEye} />
+                  ) : (
+                    <IoMdEye onClick={togglePasswordEye} />
+                  )}
+                </div>
+              </div>
               {errors.repeatPassword && (
                 <FormError text={errors.repeatPassword.message}></FormError>
               )}
-
               <input
                 type="text"
                 placeholder="Имя (необязательно)"

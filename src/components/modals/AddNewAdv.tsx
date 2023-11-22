@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react'
-import S from './Modal.module.scss'
-import { IAddNewAdv, IAdv } from 'types'
+import { IAddNewAdv, IErrorMessage, IReview } from 'types'
+import ModalPortal, { PortalTarget } from './ModalPortal'
 import { useAddAdvMutation, useAddTextAdvMutation } from 'store/services/advApi'
-import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
-import { useRefreshTokenMutation } from 'store/services/advApi'
+import { useEffect, useState } from 'react'
+
 import Button from 'common/buttons/Button'
-import { selectIsOpen } from 'store/selectors/selectors'
-import { setCloseModal } from 'store/slices/advsSlice'
-import ModalPortal from './ModalPortal'
+import FormError from 'components/Error/FormError'
+import { MobileBtnBlack } from 'common/buttons/MobileBtnBlack'
+import S from './Modal.module.scss'
+import { useMobileStatus } from 'hooks/useMobileStatus'
 
-const AddNewAdv = () => {
-  type FormChangeHandler =
-    | React.ChangeEvent<HTMLInputElement>
-    | React.ChangeEvent<HTMLTextAreaElement>
-  const dispatch = useAppDispatch()
-  const isOpen = useAppSelector(selectIsOpen)
+type Props = {
+  isOpen: boolean
+  onClose: () => void
+}
+type FormChangeHandler =
+  | React.ChangeEvent<HTMLInputElement>
+  | React.ChangeEvent<HTMLTextAreaElement>
 
-  const handleCloseModal = () => {
-    dispatch(setCloseModal())
-  }
+const AddNewAdv = ({ isOpen, onClose }: Props) => {
+  const { isMobile } = useMobileStatus()
 
   const initialFormData: IAddNewAdv = {
     title: '',
@@ -28,29 +28,30 @@ const AddNewAdv = () => {
     images: [],
   }
 
+  const initialErrorMessage: IErrorMessage = {
+    text: '',
+    type: 'error',
+  }
   const initialImgFiles: Array<File | null> = Array.from(
     { length: 5 },
     () => null,
   )
-  const { access_token, refresh_token } = useAppSelector((state) => state.auth)
+
+  const [errorMessage, setErrorMessage] =
+    useState<IErrorMessage>(initialErrorMessage)
 
   const [isFormChanged, setIsFormChanged] = useState(false)
 
-  const [
-    refreshToken,
-    { isError: isRefreshTokenError, isSuccess: isRefreshTokenSuccess },
-  ] = useRefreshTokenMutation()
-
   const [formData, setFormData] = useState<IAddNewAdv>(initialFormData)
+
+  const [imgFiles, setImgFiles] = useState(initialImgFiles)
+
   const resetState = () => {
     setFormData(initialFormData)
-    setFormError({})
+    setErrorMessage(initialErrorMessage)
     setImgFiles(initialImgFiles)
     setIsFormChanged(false)
   }
-
-  const [formError, setFormError] = useState({})
-  const [imgFiles, setImgFiles] = useState(initialImgFiles)
 
   const [addAdv, { isError, isSuccess, data }] = useAddAdvMutation()
   const [
@@ -58,7 +59,7 @@ const AddNewAdv = () => {
     {
       isError: isAddTextAdvError,
       isSuccess: isAddTextAdvSuccess,
-      data: addTextAdvData,
+      data: textAdvData,
     },
   ] = useAddTextAdvMutation()
 
@@ -66,7 +67,7 @@ const AddNewAdv = () => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
     setIsFormChanged(true)
-    setFormError({})
+    setErrorMessage(initialErrorMessage)
   }
 
   const handleFileChange = async (
@@ -87,57 +88,75 @@ const AddNewAdv = () => {
   const handleAddAdv = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (formData) {
-      if (!access_token || !refresh_token) {
-        console.error('Токены не заданы')
-        return
-      }
-      await refreshToken({ access_token, refresh_token })
       if (!formData.title) {
-        setFormError('Это поле обязательно для заполнения')
-        console.log('заполни поле')
+        setErrorMessage({ text: 'Введите название' })
         return
       }
     }
     if (imgFiles.every((file) => file === null)) {
       await addTextAdv(formData)
-      console.log('addTextAdv', formData)
     } else {
-      console.log('addAdv', formData)
       await addAdv(formData)
     }
-    resetState()
-    // onClose()
   }
 
   useEffect(() => {
     if (isSuccess) {
-      console.log('addAdvSucces')
+      if (isAddTextAdvSuccess) {
+        setErrorMessage({ text: 'Выполнено', type: 'success' })
+      }
     }
     if (isAddTextAdvSuccess) {
-      console.log('addAdvTextSucces')
+      if (isAddTextAdvSuccess) {
+        setErrorMessage({ text: 'Выполнено 2', type: 'success' })
+      }
     }
   }, [isSuccess])
 
   useEffect(() => {
-    console.log('add imgFiles', imgFiles)
     setFormData((prevFormData) => ({ ...prevFormData, imgFiles }))
   }, [imgFiles])
 
   useEffect(() => {
     if (!isOpen) {
-      console.log('reset')
       resetState()
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (isSuccess || isAddTextAdvSuccess) {
+      setErrorMessage({ text: 'Выполнено', type: 'success' })
+      setTimeout(() => {
+        setErrorMessage(initialErrorMessage)
+      }, 1000)
+    }
+    if (isAddTextAdvError || isError) {
+      setErrorMessage({ text: 'Произошла ошибка', type: 'error' })
+    }
+  }, [isAddTextAdvError, isAddTextAdvSuccess, isSuccess, isError])
+
   return isOpen ? (
-    <ModalPortal>
+    <ModalPortal target={PortalTarget.PORTAL}>
       <div className={`${S.container} ${S.show}`}>
         <div className={S.modal_block}>
-          <h3 className={S.modal_title}>Новое объявление</h3>
-          <div className={S.close_btn} onClick={handleCloseModal}>
-            <div className={S.close_btn_line}></div>
-          </div>
+          {isMobile ? (
+            <div className={S.modal_title_box}>
+              <MobileBtnBlack
+                onClick={() => {
+                  onClose()
+                }}
+              />
+              <h3 className={S.modal_title}>Новое объявление</h3>
+            </div>
+          ) : (
+            <h3 className={S.modal_title}>Новое объявление</h3>
+          )}
+
+          {!isMobile && (
+            <div className={S.close_btn} onClick={() => onClose()}>
+              <div className={S.close_btn_line}></div>
+            </div>
+          )}
           <form
             className={S.form}
             id="formNewArt"
@@ -215,6 +234,7 @@ const AddNewAdv = () => {
               text="Опубликовать"
               disabled={!isFormChanged}
             />
+            <FormError text={errorMessage.text} type={errorMessage.type} />
           </form>
         </div>
       </div>

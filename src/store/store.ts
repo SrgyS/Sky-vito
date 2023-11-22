@@ -1,11 +1,11 @@
-import { configureStore } from '@reduxjs/toolkit'
 import { advApi } from './services/advApi'
-
 import advsSlice from './slices/advsSlice'
-import { setupListeners } from '@reduxjs/toolkit/query'
+import { authApi } from './services/authApi'
 import authSlice from './slices/authSlice'
-import userSlice from './slices/userSlice'
+import { configureStore } from '@reduxjs/toolkit'
+import { setupListeners } from '@reduxjs/toolkit/query'
 import uiSlice from './slices/uiSlice'
+import userSlice from './slices/userSlice'
 
 export const store = configureStore({
   reducer: {
@@ -14,9 +14,10 @@ export const store = configureStore({
     user: userSlice,
     ui: uiSlice,
     [advApi.reducerPath]: advApi.reducer,
+    [authApi.reducerPath]: authApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(advApi.middleware),
+    getDefaultMiddleware().concat(advApi.middleware, authApi.middleware),
 })
 
 export type AppDispatch = typeof store.dispatch

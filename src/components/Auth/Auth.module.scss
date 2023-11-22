@@ -42,6 +42,16 @@
     width: 100%;
   }
 }
+.eye_wrapper {
+  position: absolute;
+  right: 10px;
+  top: 18px;
+  cursor: pointer;
+}
+.password_wrapper {
+  position: relative;
+  width: 100%;
+}
 
 @media screen and (max-width: 590px) {
   .wrapper {
@@ -58,16 +68,13 @@
       width: 120px;
     }
     form {
-      // displa: flex;
-      // flex-direction: column;
-      // justify-content: center;
       gap: 14px;
       padding: 0;
       margin: 0 auto;
       width: 279px;
 
       border-radius: none;
-      // align-items: center;
+
       button {
         margin-top: 10px;
       }

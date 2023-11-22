@@ -33,13 +33,16 @@ const MiniAdvCard = ({ cardData }: Props) => {
               alt={cardData.title}
             />
           ) : (
-            <img src={noImgUrl} alt="no img" />
+            <div className={S.no_img}>
+              {' '}
+              <img src={noImgUrl} alt="no img" />
+            </div>
           )}
         </div>
         <div className={S.card__info}>
           <p className={S.card__title}>{cardData.title}</p>
           <p className={S.card__price}>
-            {cardData.price ? formatPrice(cardData.price) : 'Цена не указана'} ₽
+            {cardData.price ? formatPrice(cardData.price) : '...'} ₽
           </p>
           <p className={S.card__date}>
             {cardData.user?.city}

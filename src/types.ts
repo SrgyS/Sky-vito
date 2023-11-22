@@ -75,3 +75,8 @@ export interface IErrorDetail {
   msg: string
   type: string
 }
+
+export interface IErrorMessage {
+  text: string
+  type?: 'error' | 'success'
+}

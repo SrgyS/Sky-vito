@@ -1,13 +1,11 @@
-import TopSection from 'common/section/TopSection'
-
-import FullAdvCard from 'components/Advertisements/FullAdvCard/FullAdvCard'
 import Footer from 'components/Footer/Footer'
+import FullAdvCard from 'components/Advertisements/FullAdvCard/FullAdvCard'
 import Header from 'components/Header/Header'
 import Search from 'components/Search/Search'
-
+import TopSection from 'common/section/TopSection'
 import { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
 import { useGetAdvByIdQuery } from 'store/services/advApi'
+import { useParams } from 'react-router-dom'
 
 const AdvPage = () => {
   const { id } = useParams()
@@ -16,10 +14,6 @@ const AdvPage = () => {
   }
 
   const { data, isLoading, error } = useGetAdvByIdQuery(id)
-
-  useEffect(() => {
-    console.log('adv', data)
-  }, [data])
 
   return (
     <>

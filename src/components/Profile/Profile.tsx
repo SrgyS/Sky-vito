@@ -1,22 +1,26 @@
-import Title from 'components/Advertisements/Title'
-import React, { useEffect, useState } from 'react'
-import ProfileImg from './ProfileImg'
-import S from './Profile.module.scss'
-import { formatUserDate } from 'utils/utils'
-import { useLocation, useParams } from 'react-router-dom'
-import Button from 'common/buttons/Button'
+import { IErrorMessage, IFormProfileData } from 'types'
 import { IUserState, setUser } from 'store/slices/userSlice'
-import Subtitle from 'components/Advertisements/Subtitle'
-import noAvatarImgUrl from 'assets/img/no-ava.png'
+import React, { useEffect, useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   useUpdateUserMutation,
   useUploadAvatarMutation,
-  useRefreshTokenMutation,
 } from 'store/services/advApi'
-import { IFormProfileData } from 'types'
-import { useAppDispatch, useAppSelector } from 'hooks/reduxHooks'
-import { SubmitHandler, useForm } from 'react-hook-form'
+
+import Button from 'common/buttons/Button'
 import FormError from 'components/Error/FormError'
+import { MobileBtnBlack } from 'common/buttons/MobileBtnBlack'
+import ProfileImg from './ProfileImg'
+import S from './Profile.module.scss'
+import S2 from 'components/modals/Modal.module.scss'
+import Subtitle from 'components/Advertisements/Subtitle'
+import Title from 'components/Advertisements/Title'
+import { formatUserDate } from 'utils/utils'
+import noAvatarImgUrl from 'assets/img/no-ava.png'
+import { useCurrentAdv } from 'hooks/useCurrentAdv'
+import { useMobileStatus } from 'hooks/useMobileStatus'
 
 type Props = { user: IUserState }
 
@@ -29,26 +33,30 @@ const Profile = ({ user }: Props) => {
     avatarFile: [],
   }
 
+  const initialErrorMessage: IErrorMessage = {
+    text: '',
+    type: 'error',
+  }
+
   const { id } = useParams()
+
+  const { id: advId } = useCurrentAdv()
 
   const [isFormChanged, setIsFormChanged] = useState(false)
   const [previewImgUrl, setPreviewImgUrl] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] =
+    useState<IErrorMessage>(initialErrorMessage)
   const { access_token, refresh_token } = useAppSelector((state) => state.auth)
 
-  const [
-    refreshToken,
-    { isError: isRefreshTokenError, isSuccess: isRefreshTokenSuccess },
-  ] = useRefreshTokenMutation()
+  const navigate = useNavigate()
+  const { isMobile } = useMobileStatus()
 
   const [
     updateUser,
     {
       isError: isUpdateUserErrror,
       isSuccess: isUpdateUserSuccess,
-      status: updateUserStatus,
       data: updateUserData,
-      error: updateUserError,
     },
   ] = useUpdateUserMutation()
 
@@ -81,13 +89,7 @@ const Profile = ({ user }: Props) => {
   const handleCancel = () => {
     setValue('avatarFile', [])
     setPreviewImgUrl('')
-    console.log('Cancelling', previewAvatar)
   }
-  // useEffect(() => {
-  //   if (isSubmitSuccessful) {
-  //     reset(data)
-  //   }
-  // }, [isSubmitSuccessful, reset])
 
   //-------------form hook--------------------------------
   const {
@@ -97,7 +99,6 @@ const Profile = ({ user }: Props) => {
     watch,
     setValue,
     reset,
-    clearErrors,
   } = useForm<IFormProfileData>({
     defaultValues: initialFormData,
     mode: 'onBlur',
@@ -106,22 +107,14 @@ const Profile = ({ user }: Props) => {
   const previewAvatar = watch('avatarFile')
 
   const onSubmit: SubmitHandler<IFormProfileData> = async (data) => {
-    console.log('avatar 1', previewAvatar)
     if (data.avatarFile) {
       const uploadAvatarFile = data.avatarFile[0]
-      console.log('avatar send', uploadAvatarFile)
+
       await uploadAvatar(uploadAvatarFile)
       setValue('avatarFile', [])
     }
     if (data) {
       const { avatarFile, ...userData } = data
-      console.log('new avatar', avatarFile)
-      console.log('new udata', userData)
-      if (!access_token || !refresh_token) {
-        console.error('Токены не заданы')
-        return
-      }
-      await refreshToken({ access_token, refresh_token })
 
       await updateUser(userData)
 
@@ -134,8 +127,13 @@ const Profile = ({ user }: Props) => {
     if (isUpdateUserSuccess) {
       dispatch(setUser(updateUserData))
       reset({ ...watch })
-      setErrorMessage('User updated successfully')
-      console.log('is dirty', isDirty)
+      setErrorMessage({
+        text: 'Данные успешно обновлены',
+        type: 'success',
+      })
+      setTimeout(() => {
+        setErrorMessage(initialErrorMessage)
+      }, 1000)
     }
   }, [isUpdateUserSuccess, updateUserData, user])
 
@@ -152,8 +150,19 @@ const Profile = ({ user }: Props) => {
       const file = previewAvatar[0]
       file && setPreviewImgUrl(URL.createObjectURL(file))
     }
-    console.log('previewImgAva', previewAvatar)
   }, [previewAvatar])
+
+  useEffect(() => {
+    if (isUpdateUserErrror || isUploadAvatarError) {
+      setErrorMessage({
+        text: 'Произошла ошибка',
+        type: 'error',
+      })
+      setTimeout(() => {
+        setErrorMessage(initialErrorMessage)
+      }, 1000)
+    }
+  }, [isUpdateUserErrror, isUploadAvatarError])
 
   return (
     <div className={S.profile_wrapper}>
@@ -165,35 +174,47 @@ const Profile = ({ user }: Props) => {
           <Subtitle>Настройки профиля</Subtitle>
         </>
       ) : (
-        <Title>Профиль продавца</Title>
+        <div className={S2.modal_title_box}>
+          <MobileBtnBlack
+            onClick={() => {
+              navigate(advId === 0 ? '/' : `/ads/${advId}`)
+            }}
+          />
+          <Title>Профиль продавца</Title>
+        </div>
       )}
       <div className={S.profile__info}>
-        <div className={S.img_box}>
-          {previewImgUrl ? (
-            <ProfileImg src={previewImgUrl} alt="avatar image" />
-          ) : user.avatar ? (
-            <ProfileImg src={`${baseUrl}/${user.avatar}`} alt="avatar image" />
-          ) : (
-            <ProfileImg src={noAvatarImgUrl} alt="avatar image" />
-          )}
-          {isProfilePage && (
-            <>
-              {previewImgUrl ? (
-                <div className={S.change_img} onClick={handleCancel}>
-                  Отменить
-                </div>
-              ) : (
-                <label
-                  className={S.change_img}
-                  htmlFor="fileInput"
-                  onClick={() => setErrorMessage('')}
-                >
-                  Загрузить
-                </label>
-              )}
-            </>
-          )}
-        </div>
+        {!(!isProfilePage && isMobile) && (
+          <div className={S.img_box}>
+            {previewImgUrl ? (
+              <ProfileImg src={previewImgUrl} alt="avatar image" />
+            ) : user.avatar ? (
+              <ProfileImg
+                src={`${baseUrl}/${user.avatar}`}
+                alt="avatar image"
+              />
+            ) : (
+              <ProfileImg src={noAvatarImgUrl} alt="avatar image" />
+            )}
+            {isProfilePage && (
+              <>
+                {previewImgUrl ? (
+                  <div className={S.change_img} onClick={handleCancel}>
+                    Отменить
+                  </div>
+                ) : (
+                  <label
+                    className={S.change_img}
+                    htmlFor="fileInput"
+                    onClick={() => setErrorMessage(initialErrorMessage)}
+                  >
+                    Загрузить
+                  </label>
+                )}
+              </>
+            )}
+          </div>
+        )}
         <div className={S.profile__details}>
           {isProfilePage ? (
             <form className={S.profile__form} onSubmit={handleSubmit(onSubmit)}>
@@ -288,7 +309,12 @@ const Profile = ({ user }: Props) => {
                 {errors.phone && (
                   <FormError text={errors.phone.message}></FormError>
                 )}
-                {errorMessage && <FormError text={errorMessage}></FormError>}
+                {errorMessage && (
+                  <FormError
+                    text={errorMessage.text}
+                    type={errorMessage.type}
+                  ></FormError>
+                )}
               </div>
               <Button
                 disabled={!isDirty && !isFormChanged}
@@ -302,6 +328,37 @@ const Profile = ({ user }: Props) => {
               <p className={S.profile__name}>{user.name}</p>
               <p className={S.profile__text}>{user.city}</p>
               <p className={S.profile__text}>Продает товары с {sellsFrom}</p>
+              {isMobile && (
+                <div className={S.img_box}>
+                  {previewImgUrl ? (
+                    <ProfileImg src={previewImgUrl} alt="avatar image" />
+                  ) : user.avatar ? (
+                    <ProfileImg
+                      src={`${baseUrl}/${user.avatar}`}
+                      alt="avatar image"
+                    />
+                  ) : (
+                    <ProfileImg src={noAvatarImgUrl} alt="avatar image" />
+                  )}
+                  {isProfilePage && (
+                    <>
+                      {previewImgUrl ? (
+                        <div className={S.change_img} onClick={handleCancel}>
+                          Отменить
+                        </div>
+                      ) : (
+                        <label
+                          className={S.change_img}
+                          htmlFor="fileInput"
+                          onClick={() => setErrorMessage(initialErrorMessage)}
+                        >
+                          Загрузить
+                        </label>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
               {isPhoneNumberVisible && user.phone ? (
                 <Button
                   text="телефон"

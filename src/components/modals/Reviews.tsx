@@ -1,19 +1,24 @@
-import Button from 'common/buttons/Button'
-import S from './Modal.module.scss'
-import { IReview } from 'types'
+import { Link, useParams } from 'react-router-dom'
+import ModalPortal, { PortalTarget } from './ModalPortal'
+import { baseUrl, formatReviewDate } from 'utils/utils'
 import { useEffect, useState } from 'react'
 import {
   useRefreshTokenMutation,
   useUploadCommentMutation,
 } from 'store/services/advApi'
-import { useAppSelector } from 'hooks/reduxHooks'
-import { useParams } from 'react-router-dom'
-import { baseUrl, formatReviewDate } from 'utils/utils'
-import { useAuth } from 'hooks/useAuth'
-import ModalPortal from './ModalPortal'
+
+import Button from 'common/buttons/Button'
 import FormError from 'components/Error/FormError'
+import { IReview } from 'types'
+import { MobileBackBtn } from 'common/buttons/MobileBtnWhite'
+import { MobileBtnBlack } from 'common/buttons/MobileBtnBlack'
+import S from './Modal.module.scss'
 import deleteIconUrl from 'assets/img/delete.png'
 import { selectCurrentAdv } from 'store/selectors/selectors'
+import { setCloseModal } from 'store/slices/advsSlice'
+import { useAppSelector } from 'hooks/reduxHooks'
+import { useAuth } from 'hooks/useAuth'
+import { useMobileStatus } from 'hooks/useMobileStatus'
 type Props = {
   isOpen: boolean
   onClose: () => void
@@ -25,6 +30,7 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
   const currentAdv = useAppSelector(selectCurrentAdv)
 
   const { isAuth, id } = useAuth()
+  const { isMobile } = useMobileStatus()
   const initialFormData = {
     text: '',
   }
@@ -44,7 +50,6 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
   const resetState = () => {
     setFormData(initialFormData)
     setIsFormChanged(false)
-    console.log('reset state')
   }
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -92,13 +97,22 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
   }, [formData])
 
   return isOpen ? (
-    <ModalPortal>
+    <ModalPortal target={PortalTarget.PORTAL}>
       <div className={`${S.container} ${S.show}`}>
         <div className={`${S.modal_block} ${S.reviews}`}>
-          <h3 className={S.modal_title}>Отзывы о товаре</h3>
-          <div className={S.close_btn} onClick={() => onClose()}>
-            <div className={S.close_btn_line}></div>
+          <div className={S.modal_title_box}>
+            <MobileBtnBlack
+              onClick={() => {
+                onClose()
+              }}
+            />
+            <h3 className={S.modal_title}>Отзывы о товаре</h3>
           </div>
+          {!isMobile && (
+            <div className={S.close_btn} onClick={() => onClose()}>
+              <div className={S.close_btn_line}></div>
+            </div>
+          )}
           <form
             className={S.form}
             id="formNewArt"
@@ -106,11 +120,11 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
             onSubmit={handleUploadComment}
           >
             <div className={S.form_block}>
-              <label htmlFor="text">Добавить отзыв</label>
+              {!isMobile && <label htmlFor="text">Добавить отзыв</label>}
               <textarea
-                className={S.form_textarea}
+                className={`${S.form_textarea} ${S.review_textarea}`}
                 name="text"
-                cols={10}
+                cols={5}
                 rows={5}
                 placeholder="Введите отзыв"
                 onChange={handleChange}
@@ -130,14 +144,19 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
               commentsData.map((comment) => (
                 <div key={comment.id} className={S.review_item}>
                   <div className={S.review_left}>
-                    <div className={S.review_img}>
-                      {comment.author.avatar && (
-                        <img
-                          src={`${baseUrl}/${comment.author.avatar}`}
-                          alt=""
-                        />
-                      )}
-                    </div>
+                    <Link
+                      to={`/seller/${comment.author?.id}`}
+                      onClick={() => onClose()}
+                    >
+                      <div className={S.review_img}>
+                        {comment.author.avatar && (
+                          <img
+                            src={`${baseUrl}/${comment.author.avatar}`}
+                            alt=""
+                          />
+                        )}
+                      </div>
+                    </Link>
                   </div>
                   <div className={S.review_right}>
                     <p className={S.review_name}>

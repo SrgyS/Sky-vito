@@ -1,17 +1,15 @@
-import TopSection from 'common/section/TopSection'
-
-import FullAdvCard from 'components/Advertisements/FullAdvCard/FullAdvCard'
 import Footer from 'components/Footer/Footer'
+import FullAdvCard from 'components/Advertisements/FullAdvCard/FullAdvCard'
 import Header from 'components/Header/Header'
 import Search from 'components/Search/Search'
 import Slider from 'components/Slider/Slider'
-import { useAppDispatch } from 'hooks/reduxHooks'
-import { useMobileStatus } from 'hooks/useMobileStatus'
-
-import { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import { useGetAdvByIdQuery } from 'store/services/advApi'
+import TopSection from 'common/section/TopSection'
 import { setCurrentAdv } from 'store/slices/advsSlice'
+import { useAppDispatch } from 'hooks/reduxHooks'
+import { useEffect } from 'react'
+import { useGetAdvByIdQuery } from 'store/services/advApi'
+import { useMobileStatus } from 'hooks/useMobileStatus'
+import { useParams } from 'react-router-dom'
 
 const AdvPage = () => {
   const { id } = useParams()
@@ -31,7 +29,6 @@ const AdvPage = () => {
     if (advData) {
       dispatch(setCurrentAdv(advData))
     }
-    console.log('adv', advData)
   }, [advData])
 
   return (

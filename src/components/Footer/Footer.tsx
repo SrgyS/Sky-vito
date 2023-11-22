@@ -1,14 +1,17 @@
-import S from './Footer.module.scss'
-import homeIconUrl from 'assets/img/icon_home.png'
-import addIconUrl from 'assets/img/icon_plus.png'
-import profileIconUrl from 'assets/img/icon_profile.png'
-import logoutIconUrl from 'assets/img/move_item.png'
-import { useAppDispatch } from 'hooks/reduxHooks'
-import { useAuth } from 'hooks/useAuth'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { setCloseModal, setOpenModal } from 'store/slices/advsSlice'
-import { resetTokens } from 'store/slices/authSlice'
+
+import AddNewAdv from 'components/modals/AddNewAdv'
+import S from './Footer.module.scss'
+import addIconUrl from 'assets/img/icon_plus.png'
+import homeIconUrl from 'assets/img/icon_home.png'
 import { logout } from 'store/slices/userSlice'
+import logoutIconUrl from 'assets/img/move_item.png'
+import profileIconUrl from 'assets/img/icon_profile.png'
+import { resetTokens } from 'store/slices/authSlice'
+import { useAppDispatch } from 'hooks/reduxHooks'
+import { useAuth } from 'hooks/useAuth'
+import { useState } from 'react'
 
 const Footer = () => {
   const { isAuth, id } = useAuth()
@@ -18,7 +21,18 @@ const Footer = () => {
   const handleOpenModal = () => {
     dispatch(setOpenModal())
   }
+  const [isAddAdvModalOpen, setIsAddAdvModalOpen] = useState(false)
+
   const navigate = useNavigate()
+
+  const openAddAdvwModal = () => {
+    setIsAddAdvModalOpen(true)
+    dispatch(setOpenModal())
+  }
+  const closeAddAdvModal = () => {
+    setIsAddAdvModalOpen(false)
+    dispatch(setCloseModal())
+  }
 
   const handleCloseModal = () => {
     dispatch(setCloseModal())
@@ -38,13 +52,13 @@ const Footer = () => {
           </div>
         </Link>
         {isAuth ? (
-          <div className={S.footer__img} onClick={handleOpenModal}>
+          <div className={S.footer__img} onClick={openAddAdvwModal}>
             <img src={addIconUrl} alt="add icon" />
           </div>
         ) : (
           <Link to="/signin">
             <div className={S.footer__img}>
-              <img src={addIconUrl} alt="home" />
+              <img src={addIconUrl} alt="add icon" />
             </div>
           </Link>
         )}
@@ -62,6 +76,7 @@ const Footer = () => {
             </div>
           </Link>
         )}
+        <AddNewAdv isOpen={isAddAdvModalOpen} onClose={closeAddAdvModal} />
       </div>
     </footer>
   )

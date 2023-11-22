@@ -1,29 +1,36 @@
-import HeaderWrapper from './HeaderWrapper'
-import HeaderFirstRow from './HeaderContainer'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { resetTokens, setTokens } from 'store/slices/authSlice'
+import { setCloseModal, setOpenModal } from 'store/slices/advsSlice'
+import { useEffect, useLayoutEffect, useState } from 'react'
 
+import AddNewAdv from 'components/modals/AddNewAdv'
 import Button from 'common/buttons/Button'
-import { useAuth } from 'hooks/useAuth'
+import HeaderContainer from './HeaderContainer'
+import HeaderFirstRow from './HeaderContainer'
+import HeaderWrapper from './HeaderWrapper'
 import { logout } from 'store/slices/userSlice'
 import { useAppDispatch } from 'hooks/reduxHooks'
-import AddNewAdv from 'components/modals/AddNewAdv'
-import { setOpenModal } from 'store/slices/advsSlice'
-import { resetTokens, setTokens } from 'store/slices/authSlice'
-import HeaderContainer from './HeaderContainer'
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useAuth } from 'hooks/useAuth'
 
 const Header = () => {
   const location = useLocation()
   const { isAuth, id } = useAuth()
 
-  console.log('isAuth', isAuth)
+  const [isAddAdvModalOpen, setIsAddAdvModalOpen] = useState(false)
+
   const isProfilePage = location.pathname === `/user/${id}`
 
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
   const handleOpenModal = () => {
+    setIsAddAdvModalOpen(true)
     dispatch(setOpenModal())
+  }
+
+  const handleCloseModal = () => {
+    setIsAddAdvModalOpen(false)
+    dispatch(setCloseModal())
   }
   const handleLogout = () => {
     dispatch(logout())
@@ -61,7 +68,7 @@ const Header = () => {
           )}
         </HeaderContainer>
       </HeaderWrapper>
-      <AddNewAdv />
+      <AddNewAdv onClose={handleCloseModal} isOpen={isAddAdvModalOpen} />
     </>
   )
 }

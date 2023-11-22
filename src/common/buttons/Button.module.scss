@@ -36,6 +36,38 @@
 }
 
 @media screen and (max-width: 590px) {
+  .back_btn {
+    width: 23px;
+    height: 23px;
+    position: absolute;
+    top: 19px;
+    left: 27px;
+    border-top: 2px solid #ffff;
+    border-left: 2px solid #ffff;
+    transform: rotate(-45deg);
+    cursor: pointer;
+    transition: all 0.3s;
+    &:hover {
+      border-top: 2px solid #009ee4;
+      border-left: 2px solid #009ee4;
+    }
+  }
+  .back_btn_black {
+    position: absolute;
+    top: 8px;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    transform: rotate(-45deg);
+    cursor: pointer;
+    transition: all 0.3s;
+    &:hover {
+      border-top: 2px solid #009ee4;
+      border-left: 2px solid #009ee4;
+    }
+  }
   .color_btn.header_btn {
     display: none;
   }
