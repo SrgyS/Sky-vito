@@ -19,6 +19,7 @@ import { setCloseModal } from 'store/slices/advsSlice'
 import { useAppSelector } from 'hooks/reduxHooks'
 import { useAuth } from 'hooks/useAuth'
 import { useMobileStatus } from 'hooks/useMobileStatus'
+
 type Props = {
   isOpen: boolean
   onClose: () => void
@@ -129,6 +130,7 @@ const Reviews = ({ isOpen, onClose, commentsData }: Props) => {
                 placeholder="Введите отзыв"
                 onChange={handleChange}
                 value={formData.text}
+                disabled={!isAuth}
               ></textarea>
               <FormError text={errorMessage} />
             </div>
